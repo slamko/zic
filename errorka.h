@@ -1,6 +1,10 @@
 #ifndef DEF_TYPES
 #define DEF_TYPES
 
+void errdefer(void);
+
+void defer(void);
+
 #define HANDLE_ERR(ERR, ...) error(ERR, ##__VA_ARGS__); return FAIL;
 
 #define UNWRAP(EXP) { \
@@ -67,6 +71,19 @@ extern void *unwrap_ptr_res;
 #define PTR_UNWRAP(EXP) (unwrap_ptr_res = (EXP)) ? unwrap_ptr_res : NULL; \
     { if (!unwrap_ptr_res) return ERR_SYS; }
 
+
+#define DEFER(STATEMENT) goto next; \
+    defer: \
+    STATEMENT; \
+    goto exit; \
+    next: 
+
+#define ERR_DEFER(STATEMENT) goto errnext; \
+    errdefer: \
+    STATEMENT; \
+    goto errexit; \
+    errnext: 
+
 typedef enum {
     OK = 0,
     FAIL = 1,
@@ -85,8 +102,15 @@ typedef int result;
 
 #define IS_ERROR(EXP) (EXP != OK)
 
-#define OK() return OK;
+#define OK() goto defer; \
+    exit: return OK;
 
-#define ERROR(ERR) return ERR;
+#define ERROR(ERR) goto defer; \
+    exit: goto errdefer; \
+    errexit: return ERR;
 
+#define FAIL() goto defer; \
+    exit: goto errdefer; \
+    errexit: return FAIL;
+    
 #endif

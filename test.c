@@ -3,15 +3,21 @@
 #include <string.h>
 #include "errorka.h"
 
-//void *unwrap_ptr_res;
-
 int 
 main(int argc, char **argv) {
     char *str = NULL;
 
+    ERR_DEFER(printf("error"))
+
     str = PTR_UNWRAP (calloc(10, sizeof(*str)))
-    UNWRAP_PTR(strcpy(str, "hello"));
+    DEFER (free(str))
+    
+    if (strnlen(argv[1], 10) >= 10) {
+        ERROR(ERR_USER)
+    }
+
+    UNWRAP_PTR(strcpy(str, argv[1]));
     printf("%s", str);
 
-    return 0;
+    return OK;
 }
