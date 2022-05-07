@@ -81,7 +81,7 @@ extern void *unwrap_ptr_res;
 #define ERR_DEFER(STATEMENT) goto errnext; \
     errdefer: \
     STATEMENT; \
-    goto errexit; \
+    goto defer; \
     errnext: 
 
 typedef enum {
@@ -94,6 +94,40 @@ typedef enum {
 
 typedef int result;
 
+#define DEF { \
+    result res;
+    void *unwrap_ptr_res;
+
+/*#define END errdefer: \
+    if (err_defer_cnt > 0) { \
+        if (err_defer_cnt == 1) { \
+            goto errdefer1; \
+        } else if (err_defer_cnt == 2) { \
+            goto errdefer2; \
+        } else if (err_defer_cnt == 3) { \
+            goto errdefer3; \
+        } else { \
+            #error Reached max count of ERR_DEFER labels \
+        } \
+    } \
+    defer: \
+    if (defer_cnt > 0) { \
+        if (defer_cnt == 1) { \
+            goto defer1; \
+        } else if (defer_cnt == 2) { \
+            goto defer2; \
+        } else if (defer_cnt == 3) { \
+            goto defer3; \
+        } else { \
+            #error Reached max count of DEFER labels \
+        } \
+    } \
+    exit: return res; \
+}*/
+
+#define END exit: return res;\
+}
+
 #define IS_HANDLED(ERR) (ERR == FAIL)
 
 #define IS_UNHANDLED(ERR) (ERR != FAIL)
@@ -102,15 +136,13 @@ typedef int result;
 
 #define IS_ERROR(EXP) (EXP != OK)
 
-#define OK() goto defer; \
-    exit: return OK;
+#define OK() res = OK; \
+    goto exit;
 
-#define ERROR(ERR) goto defer; \
-    exit: goto errdefer; \
-    errexit: return ERR;
+#define ERROR(ERR) res = ERR; \
+    goto exit;
 
-#define FAIL() goto defer; \
-    exit: goto errdefer; \
-    errexit: return FAIL;
-    
+#define FAIL() res = FAIL; \
+    goto exit;
+
 #endif
