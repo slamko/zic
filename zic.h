@@ -1,6 +1,8 @@
 #ifndef ZIC_ERROR_HANDLING
 #define ZIC_ERROR_HANDLING
 
+#include "defer.h"
+
 #define ERROR_PREFIX "error"
 
 #define CATCH(ERR, ...) \
@@ -88,20 +90,6 @@
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) return ERR; }
 
-/*#define DEFER(STATEMENT) \
-    goto next; \
-    defer: \
-    STATEMENT; \
-    goto exit; \
-    next: 
-
-#define ERR_DEFER(STATEMENT) \
-    goto errnext; \
-    errdefer: \
-    STATEMENT; \
-    goto defer; \
-    errnext: */
-
 typedef enum {
     OK = 0,
     FAIL = 1,
@@ -113,10 +101,18 @@ typedef enum {
 typedef int result;
 
 #define DEF { \
-    result ZIC_res;
-    void *ZIC_unwrap_ptr_res;
+    result ZIC_res; \
+    void *ZIC_unwrap_ptr_res = NULL; \
+    struct defer_arr ZIC_defer_arr = {0}; \
+    struct defer_arr ZIC_errdefer_arr = {0};
 
-#define END exit: return ZIC_res; \
+#define END ;\
+    exit: \
+    for(int deferid = 0; deferid < ZIC_defer_arr.defercnt; deferid++) \
+    ZIC_defer_arr.defers[deferid](ZIC_defer_arr.args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_errdefer_arr.defercnt; deferid++) \
+    ZIC_errdefer_arr.defers[deferid](ZIC_errdefer_arr.args[deferid]); \
+    return ZIC_res; \
 }
 
 #define IS_HANDLED(ERR) (ERR == FAIL || ERR == OK)

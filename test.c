@@ -3,19 +3,12 @@
 #include <string.h>
 #include "zic.h"
 
-result some() DEF
-    ERROR(ERR_USER)
-END
-
 int
 main(int argc, char **argv) DEF
     char *str = NULL;
 
-    printf("%d", argc);
     str = PTR_UNWRAP (calloc(10, sizeof(*str)))
-
-    if (some()) 
-        CATCH("wrong name: %s", argv[0])
+    DEFER(free, str)
 
     if (argc != 2) {
         ERROR(ERR_USER)
