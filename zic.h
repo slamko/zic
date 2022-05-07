@@ -1,11 +1,15 @@
-#ifndef DEF_TYPES
-#define DEF_TYPES
+#ifndef ZIC_ERROR_HANDLING
+#define ZIC_ERROR_HANDLING
 
-void errdefer(void);
+#define ERROR_PREFIX "error"
 
-void defer(void);
+#define CATCH(ERR, ...) \
+    fprintf(stderr, ERROR_PREFIX); \
+    fprintf(stderr, ERR, ##__VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    return FAIL;
 
-#define HANDLE_ERR(ERR, ...) error(ERR, ##__VA_ARGS__); return FAIL;
+#define CATCH_SYS() perror(ERROR_PREFIX); return FAIL;
 
 #define UNWRAP(EXP) { \
     int res = (EXP); \
@@ -66,23 +70,37 @@ void defer(void);
     const void *res = (EXP); \
     if (!res) return ERR; }
 
-extern void *unwrap_ptr_res;
+#define PTR_UNWRAP(EXP) \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) return ERR_SYS; }
 
-#define PTR_UNWRAP(EXP) (unwrap_ptr_res = (EXP)) ? unwrap_ptr_res : NULL; \
-    { if (!unwrap_ptr_res) return ERR_SYS; }
+#define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
 
+#define PTR_UNWRAP_LOCAL(EXP) { \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) return ERR_LOCAL; }
 
-#define DEFER(STATEMENT) goto next; \
+#define PTR_UNWRAP_USER(EXP) { \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) return ERR_USER; }
+
+#define PTR_UNWRAP_ERR(EXP, ERR) { \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) return ERR; }
+
+/*#define DEFER(STATEMENT) \
+    goto next; \
     defer: \
     STATEMENT; \
     goto exit; \
     next: 
 
-#define ERR_DEFER(STATEMENT) goto errnext; \
+#define ERR_DEFER(STATEMENT) \
+    goto errnext; \
     errdefer: \
     STATEMENT; \
     goto defer; \
-    errnext: 
+    errnext: */
 
 typedef enum {
     OK = 0,
@@ -95,54 +113,30 @@ typedef enum {
 typedef int result;
 
 #define DEF { \
-    result res;
-    void *unwrap_ptr_res;
+    result ZIC_res;
+    void *ZIC_unwrap_ptr_res;
 
-/*#define END errdefer: \
-    if (err_defer_cnt > 0) { \
-        if (err_defer_cnt == 1) { \
-            goto errdefer1; \
-        } else if (err_defer_cnt == 2) { \
-            goto errdefer2; \
-        } else if (err_defer_cnt == 3) { \
-            goto errdefer3; \
-        } else { \
-            #error Reached max count of ERR_DEFER labels \
-        } \
-    } \
-    defer: \
-    if (defer_cnt > 0) { \
-        if (defer_cnt == 1) { \
-            goto defer1; \
-        } else if (defer_cnt == 2) { \
-            goto defer2; \
-        } else if (defer_cnt == 3) { \
-            goto defer3; \
-        } else { \
-            #error Reached max count of DEFER labels \
-        } \
-    } \
-    exit: return res; \
-}*/
-
-#define END exit: return res;\
+#define END exit: return ZIC_res; \
 }
 
-#define IS_HANDLED(ERR) (ERR == FAIL)
+#define IS_HANDLED(ERR) (ERR == FAIL || ERR == OK)
 
-#define IS_UNHANDLED(ERR) (ERR != FAIL)
+#define IS_UNHANDLED(ERR) (ERR != FAIL && ERR != OK)
 
 #define IS_OK(EXP) (EXP == OK)
 
 #define IS_ERROR(EXP) (EXP != OK)
 
-#define OK() res = OK; \
+#define OK() \
+    ZIC_res = OK; \
     goto exit;
 
-#define ERROR(ERR) res = ERR; \
+#define ERROR(ERR) \
+    ZIC_res = ERR; \
     goto exit;
 
-#define FAIL() res = FAIL; \
+#define FAIL() \
+    ZIC_res = FAIL; \
     goto exit;
 
 #endif

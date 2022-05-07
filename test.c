@@ -1,7 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "errorka.h"
+#include "zic.h"
+
+result some() DEF
+    ERROR(ERR_USER)
+END
 
 int
 main(int argc, char **argv) DEF
@@ -9,6 +13,9 @@ main(int argc, char **argv) DEF
 
     printf("%d", argc);
     str = PTR_UNWRAP (calloc(10, sizeof(*str)))
+
+    if (some()) 
+        CATCH("wrong name: %s", argv[0])
 
     if (argc != 2) {
         ERROR(ERR_USER)
