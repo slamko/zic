@@ -103,15 +103,13 @@ typedef int result;
 #define DEF { \
     result ZIC_res; \
     void *ZIC_unwrap_ptr_res = NULL; \
-    struct defer_arr ZIC_defer_arr = {0}; \
-    struct defer_arr ZIC_errdefer_arr = {0};
-
+    INIT_DEFER()
+    
 #define END ;\
+    errexit: \
+    DO_ERRDEFER() \
     exit: \
-    for(int deferid = 0; deferid < ZIC_defer_arr.defercnt; deferid++) \
-    ZIC_defer_arr.defers[deferid](ZIC_defer_arr.args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.defercnt; deferid++) \
-    ZIC_errdefer_arr.defers[deferid](ZIC_errdefer_arr.args[deferid]); \
+    DO_DEFER() \
     return ZIC_res; \
 }
 
@@ -129,10 +127,10 @@ typedef int result;
 
 #define ERROR(ERR) \
     ZIC_res = ERR; \
-    goto exit;
+    goto errexit;
 
 #define FAIL() \
     ZIC_res = FAIL; \
-    goto exit;
+    goto errexit;
 
 #endif
