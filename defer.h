@@ -1,10 +1,18 @@
-typedef void(*defer_void_func)(void *);
+#include <stdlib.h>
+#include <stdio.h>
+#include <dirent.h>
 
-typedef int(*defer_func)(void *);
+typedef void(*defer_free)(void *);
+
+typedef int(*defer_fclose)(FILE *);
+
+typedef int(*defer_str)(const char *, ...);
+
+typedef int(*defer_closedir)(DIR *);
 
 typedef unsigned short defer_cnt;
 
-#define DEFERS_COUNT 32
+#define DEFERS_COUNT 8
 
 #define USE_DEFER
 
@@ -13,51 +21,72 @@ typedef unsigned short defer_cnt;
     struct defer_arr ZIC_errdefer_arr = {0};
 
 #define DO_DEFER() \
-    for(int deferid = 0; deferid < ZIC_defer_arr.cnt; deferid++) \
-    ZIC_defer_arr.defers[deferid](ZIC_defer_arr.args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_defer_arr.void_cnt; deferid++) \
-    ZIC_defer_arr.defers_void[deferid](ZIC_defer_arr.void_args[deferid]);
+    for(int deferid = 0; deferid < ZIC_defer_arr.free_cnt; deferid++) \
+    free(ZIC_defer_arr.free_args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_defer_arr.fclose_cnt; deferid++) \
+    fclose(ZIC_defer_arr.fclose_args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_defer_arr.closedir_cnt; deferid++) \
+    closedir(ZIC_defer_arr.closedir_args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_defer_arr.str_cnt; deferid++) \
+    ZIC_defer_arr.defers_str[deferid](ZIC_defer_arr.str_args[deferid]); \
 
 #define DO_ERRDEFER() \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.cnt; deferid++) \
-    ZIC_errdefer_arr.defers[deferid](ZIC_errdefer_arr.args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.void_cnt; deferid++) \
-    ZIC_errdefer_arr.defers_void[deferid](ZIC_errdefer_arr.void_args[deferid]);
+    for(int deferid = 0; deferid < ZIC_errdefer_arr.free_cnt; deferid++) \
+    free(ZIC_errdefer_arr.free_args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_errdefer_arr.fclose_cnt; deferid++) \
+    fclose(ZIC_errdefer_arr.fclose_args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_errdefer_arr.closedir_cnt; deferid++) \
+    closedir(ZIC_errdefer_arr.closedir_args[deferid]); \
+    for(int deferid = 0; deferid < ZIC_errdefer_arr.str_cnt; deferid++) \
+    ZIC_errdefer_arr.defers_str[deferid](ZIC_errdefer_arr.str_args[deferid]); \
 
 struct defer_arr {
-    defer_void_func defers_void[DEFERS_COUNT / 2];
-    defer_func defers[DEFERS_COUNT / 2];
-    void *void_args[DEFERS_COUNT / 2];
-    void *args[DEFERS_COUNT / 2];
-    defer_cnt cnt;
-    defer_cnt void_cnt;
+    defer_free defers_free[DEFERS_COUNT];
+    defer_fclose defers_fclose[DEFERS_COUNT];
+    defer_closedir defers_closedir[DEFERS_COUNT];
+    defer_str defers_str[DEFERS_COUNT];
+    void *free_args[DEFERS_COUNT];
+    FILE *fclose_args[DEFERS_COUNT];
+    DIR *closedir_args[DEFERS_COUNT];
+    char *str_args[DEFERS_COUNT];
+    defer_cnt free_cnt;
+    defer_cnt fclose_cnt;
+    defer_cnt closedir_cnt;
+    defer_cnt str_cnt;
 };
 
-#define L_DEFER_VOID(DFUNC, PTR)\
-    ZIC_defer_arr.defers_void[ZIC_defer_arr.void_cnt] = DFUNC; \
-    ZIC_defer_arr.void_args[ZIC_defer_arr.void_cnt] = PTR; \
-    ZIC_defer_arr.void_cnt++;
-
-#define L_DEFER(DFUNC, PTR)\
-    ZIC_defer_arr.defers[ZIC_defer_arr.cnt] = DFUNC; \
-    ZIC_defer_arr.args[ZIC_defer_arr.cnt] = PTR; \
-    ZIC_defer_arr.cnt++;
-
-#define L_ERRDEFER_VOID(DFUNC, PTR)\
-    ZIC_errdefer_arr.defers_void[ZIC_errdefer_arr.void_cnt] = DFUNC; \
-    ZIC_errdefer_arr.void_args[ZIC_errdefer_arr.void_cnt] = PTR; \
+#define ERRDEFER_FREE(PTR) \
+    ZIC_errdefer_arr.free_args[ZIC_errdefer_arr.free_cnt] = PTR; \
     ZIC_errdefer_arr.void_cnt++;
 
-#define L_ERRDEFER(DFUNC, PTR)\
-    ZIC_errdefer_arr.defers[ZIC_errdefer_arr.cnt] = DFUNC; \
-    ZIC_errdefer_arr.args[ZIC_errdefer_arr.cnt] = PTR; \
-    ZIC_errdefer_arr.cnt++;
+#define ERRDEFER_FCLOSE(PTR) \
+    ZIC_errdefer_arr.fclose_args[ZIC_errdefer_arr.fclose_cnt] = PTR; \
+    ZIC_errdefer_arr.fclose_cnt++;
+
+#define ERRDEFER_CLOSE_DIR(PTR) \
+    ZIC_errdefer_arr.closedir_args[ZIC_errdefer_arr.closedir_cnt] = PTR; \
+    ZIC_errdefer_arr.closedir_cnt++;
+
+#define ERRDEFER_STR(FUNC, PTR) \
+    ZIC_errdefer_arr.defers_str[ZIC_errdefer_arr.str_cnt] = FUNC; \
+    ZIC_errdefer_arr.str_args[ZIC_errdefer_arr.str_cnt] = PTR; \
+    ZIC_errdefer_arr.str_cnt++;
 
 
-#define DEFER_FREE(DFUNC, PTR) L_DEFER_VOID((defer_void_func)DFUNC, (void *)PTR)
 
-#define DEFER(DFUNC, PTR) L_DEFER((defer_func)DFUNC, (void *)PTR)
+#define DEFER_FREE(PTR) \
+    ZIC_defer_arr.free_args[ZIC_defer_arr.free_cnt] = PTR; \
+    ZIC_defer_arr.free_cnt++;
 
-#define ERRDEFER_FREE(DFUNC, PTR) L_ERRDEFER_VOID((defer_void_func)DFUNC, (void *)PTR)
+#define DEFER_FCLOSE(PTR) \
+    ZIC_defer_arr.fclose_args[ZIC_defer_arr.fclose_cnt] = PTR; \
+    ZIC_defer_arr.fclose_cnt++;
 
-#define ERRDEFER(DFUNC, PTR) L_ERRDEFER((defer_func)DFUNC, (void *)PTR)
+#define DEFER_CLOSE_DIR(PTR) \
+    ZIC_defer_arr.closedir_args[ZIC_defer_arr.closedir_cnt] = PTR; \
+    ZIC_defer_arr.closedir_cnt++;
+
+#define DEFER_STR(FUNC, PTR) \
+    ZIC_defer_arr.defers_str[ZIC_defer_arr.str_cnt] = FUNC; \
+    ZIC_defer_arr.str_args[ZIC_defer_arr.str_cnt] = PTR; \
+    ZIC_defer_arr.str_cnt++;

@@ -107,9 +107,9 @@ typedef int result;
     
 #define END ;\
     errexit: \
-    DO_ERRDEFER() \
+    DO_ERRDEFER(); \
     exit: \
-    DO_DEFER() \
+    DO_DEFER(); \
     return ZIC_res; \
 }
 
