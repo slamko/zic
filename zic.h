@@ -72,6 +72,8 @@
     const void *res = (EXP); \
     if (!res) return ERR; }
 
+#ifndef MINIMAL_ZIC
+
 #define PTR_UNWRAP(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) return ERR_SYS; }
@@ -90,6 +92,8 @@
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) return ERR; }
 
+#endif
+
 typedef enum {
     OK = 0,
     FAIL = 1,
@@ -100,6 +104,7 @@ typedef enum {
 
 typedef int result;
 
+#ifndef MINIMAL_ZIC
 #ifdef USE_NESTED_FUNCTIONS
 
 #define DEF { \
@@ -112,7 +117,12 @@ typedef int result;
     void *ZIC_unwrap_ptr_res = NULL; \
     INIT_DEFER()
 #endif
-    
+
+#else
+#define DEF {
+#endif
+
+#ifndef MINIMAL_ZIC
 #define END ;\
     errexit: \
     DO_ERRDEFER(); \
@@ -120,6 +130,9 @@ typedef int result;
     DO_DEFER(); \
     return ZIC_res; \
 }
+#else
+#define END }
+#endif
 
 #define IS_HANDLED(ERR) (ERR == FAIL || ERR == OK)
 
@@ -129,10 +142,16 @@ typedef int result;
 
 #define IS_ERROR(EXP) (EXP != OK)
 
+#define ISNULL(PTR) !PTR
+
+#define IS_NOTNULL(PTR) PTR
+
 #define OR(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res
 
 #define ELSE(EXP) : (EXP) ;
+
+#ifndef MINIMAL_ZIC
 
 #define OK() \
     ZIC_res = OK; \
@@ -145,5 +164,22 @@ typedef int result;
 #define FAIL() \
     ZIC_res = FAIL; \
     goto errexit;
+
+#else
+#define OK() \
+    DO_DEFER();\
+    return OK;
+
+#define ERROR(ERR) \
+    DO_ERRDEFER();\
+    DO_DEFER();\
+    return ERR;
+
+#define FAIL() \
+    DO_ERRDEFER();\
+    DO_DEFER();\
+    return FAIL; 
+
+#endif
 
 #endif

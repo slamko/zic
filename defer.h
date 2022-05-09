@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <dirent.h>
 
+#ifndef MINIMAL_ZIC
+#define ALLOW_HIDDEN_STACKALLOC
+#endif
+
 #ifdef __GNUC__ 
 #define USE_NESTED_FUNCTIONS
 
@@ -127,7 +131,7 @@ void errdefer8(void);
     errdefer8(); 
 
 
-#else
+#elif defined ALLOW_HIDDEN_STACKALLOC
 
 typedef void(*defer_free)(void *);
 
