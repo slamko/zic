@@ -100,10 +100,18 @@ typedef enum {
 
 typedef int result;
 
+#ifdef USE_NESTED_FUNCTIONS
+
 #define DEF { \
-    result ZIC_res; \
+    result ZIC_res = OK; \
+    void *ZIC_unwrap_ptr_res = NULL; 
+#else
+
+#define DEF { \
+    result ZIC_res = OK; \
     void *ZIC_unwrap_ptr_res = NULL; \
     INIT_DEFER()
+#endif
     
 #define END ;\
     errexit: \
