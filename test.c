@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <dirent.h>
 #include "zic.h"
 
 result
@@ -9,7 +11,11 @@ defer_close_file(int argc, char **argv) DEF
     FILE *fp;
     char ch;
 
-    fp = PTR_UNWRAP(fopen(file, "r"))
+    fp = OR (fopen(file, "r")) ELSE(NULL);
+
+    if(!fp)
+        FAIL()
+
     DEFER_FCLOSE(fp)
 
     ch = fgetc(fp);

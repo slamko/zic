@@ -121,6 +121,11 @@ typedef int result;
 
 #define IS_ERROR(EXP) (EXP != OK)
 
+#define OR(EXP) \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res
+
+#define ELSE(EXP) : (EXP) ;
+
 #define OK() \
     ZIC_res = OK; \
     goto exit;
