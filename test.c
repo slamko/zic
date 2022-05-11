@@ -16,7 +16,7 @@ defer_close_file(int argc, char **argv) DEF
     printf("%p\n", fp);
 
     ch = fgetc(fp);
-    UNWRAP_NEG (fputc(ch, stdout))
+    UNWRAP_NEG (fputc(ch, stdout), final)
 END_CLEAN
 
 
@@ -32,15 +32,15 @@ defer_free_t(int argc, char **argv) DEF
     DEFER2_FINAL(free(str))
 
     if (argc != 2) {
-        ERROR(ERR_USER)
+        ERROR(ERR_USER, final)
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERROR(ERR_USER)
+        ERROR(ERR_USER, final)
     }
     
-    UNWRAP_PTR(strcpy(str, argv[1]));
-    printf("%s\n", str);
+    UNWRAP_PTR(strcpy(str, argv[1]), final);
+    UNWRAP (puts(str), final);
     OK()
 END
 

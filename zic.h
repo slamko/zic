@@ -11,16 +11,16 @@
     ZIC_res = OK; \
     goto deferfinal;
 
-#define ERROR_F(ERR) \
+#define ERROR_FORCE(ERR) \
     ZIC_res = ERR; \
-    goto deferfinal;
+    goto exit;
 
 #define ERROR_LABEL(ERR, LABEL) \
     ZIC_res = ERR; \
     goto defer##LABEL;
 
 #define GET_ERROR_MACRO(_A1, _A2, ERROR_MACRO,...) ERROR_MACRO
-#define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_F)(__VA_ARGS__)
+#define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FORCE)(__VA_ARGS__)
 
 #define FAIL() \
     ZIC_res = FAIL; \
@@ -51,14 +51,32 @@
 
 #define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
 
-#define UNWRAP(EXP) { \
+#define UNWRAP_FORCE(EXP) { \
     int res = (EXP); \
     if (res < 0) ERROR(ERR_SYS); \
     else if (res) ERROR(res); }
 
-#define UNWRAP_NEG(EXP) { \
+#define UNWRAP_LABEL(EXP, LABEL) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR(ERR_SYS, LABEL); } \
+    else if (res) ERROR(res, LABEL); }
+
+#define GET_UNWRAP_MACRO(_A1, _A2, UNWRAP_MACRO,...) UNWRAP_MACRO
+#define UNWRAP(...) GET_UNWRAP_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FORCE)(__VA_ARGS__)
+
+
+#define UNWRAP_NEG_FORCE(EXP) { \
     int res = (EXP); \
     if (res < 0) ERROR(ERR_SYS); }
+
+#define UNWRAP_NEG_LABEL(EXP, LABEL) { \
+    int res = (EXP); \
+    if (res < 0) ERROR(ERR_SYS, LABEL); }
+
+#define GET_UNWRAP_NEG(_A1, _A2, UNWRAP_NEG_MACRO,...) UNWRAP_NEG_MACRO
+
+#define UNWRAP_NEG(...) GET_UNWRAP_NEG(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FORCE)(__VA_ARGS__)
+
 
 #define UNWRAP_SYS(EXP) UNWRAP(EXP)
 
@@ -92,9 +110,17 @@
     const int res = (EXP); \
     if (res < 0) ERROR(ERR) 
 
-#define UNWRAP_PTR(EXP) { \
+#define UNWRAP_PTR_FORCE(EXP) { \
     const void *res = (EXP); \
     if (!res) ERROR(ERR_SYS) }
+
+#define UNWRAP_PTR_LABEL(EXP, LABEL) { \
+    const void *res = (EXP); \
+    if (!res) ERROR(ERR_SYS, LABEL) }
+
+#define GET_UNWRAP_PTR(_A1, _A2, UNWRAP_PTR_MACRO,...) UNWRAP_PTR_MACRO
+
+#define UNWRAP_PTR(...) GET_UNWRAP_PTR(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FORCE)(__VA_ARGS__)
 
 #define UNWRAP_PTR_SYS(EXP) UNWRAP_PTR(EXP)
 
@@ -112,7 +138,7 @@
 
 #ifndef MINIMAL_ZIC
 
-#define PTR_UNWRAP_F(EXP) \
+#define PTR_UNWRAP_FORCE(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS) }
 
@@ -122,7 +148,7 @@
 
 #define GET_PTR_UNWRAP(_A1, _A2, PTR_UNWRAP_MACRO,...) PTR_UNWRAP_MACRO
 
-#define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_F)(__VA_ARGS__)
+#define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FORCE)(__VA_ARGS__)
 
 #define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
 
