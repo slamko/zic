@@ -6,8 +6,15 @@
 #define ALLOW_HIDDEN_STACKALLOC
 #endif
 
+#define USE_ZIC_STD
+
+#ifndef USE_ZIC_STD
 #ifdef __GNUC__ 
 #define USE_NESTED_FUNCTIONS
+#endif
+#endif
+
+#ifdef USE_NESTED_FUNCTIONS
 
 void defer1(void);
 void defer2(void);
@@ -129,8 +136,24 @@ void errdefer8(void);
     errdefer6(); \
     errdefer7(); \
     errdefer8(); 
+#else 
+/*
+#define DEFER1(LABEL, ST) goto next##LABEL; defer##LABEL: defer1: ST; goto exit; next##LABEL:;
+#define DEFER2(LABEL, ST) goto next##LABEL; defer##LABEL: defer2: goto defer1; ST; goto exit; next##LABEL:;
+#define DEFER3(LABEL, ST) goto next##LABEL; defer##LABEL: defer3: goto defer1; goto defer2; ST; goto exit; next##LABEL:;
+*/
+#define ERR_CLEANUP(LABEL, ERR) ZIC_res = ERR; goto LABEL;
 
+#define CLEANUP(LABEL, CLEAN) LABEL: CLEAN;
 
+#define DO_DEFER()
+
+#define DO_ERRDEFER()
+
+#define INIT_DEFER()
+
+#endif
+/*
 #elif defined ALLOW_HIDDEN_STACKALLOC
 
 typedef void(*defer_free)(void *);
@@ -222,4 +245,4 @@ struct defer_arr {
     ZIC_defer_arr.str_args[ZIC_defer_arr.str_cnt] = PTR; \
     ZIC_defer_arr.str_cnt++;
 
-#endif
+#endif*/

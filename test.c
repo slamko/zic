@@ -12,39 +12,35 @@ defer_close_file(int argc, char **argv) DEF
     char ch;
 
     fp = fopen(file, "r");
-    UNWRAP_PTR(fp)
     printf("%p\n", fp);
-
-    DEFER2(fclose(fp))
 
     ch = fgetc(fp);
     fputc(ch, stdout);
-    ERRDEFER3(printf("ERR\n"))
-    DEFER1(printf("\nthats all!\n"))
     FAIL()
 END
 
-/*
+
 result
 defer_free_t(int argc, char **argv) DEF 
     char *str = NULL;
 
     str = PTR_UNWRAP (calloc(10, sizeof(*str)))
-    DEFER1(free(str))
 
     if (argc != 2) {
-        ERROR(ERR_USER)
+        ERR_CLEANUP(free_str, ERR_USER)
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERROR(ERR_USER)
+        ERR_CLEANUP(free_str, ERR_USER)
     }
 
     UNWRAP_PTR(strcpy(str, argv[1]));
     printf("%s\n", str);
+
+    CLEANUP(free_str, free(str))
     OK()
-END
-*/
+END()
+
 int
 main(int argc, char **argv) DEF
     return defer_close_file(argc, argv);

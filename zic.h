@@ -5,22 +5,53 @@
 
 #define ERROR_PREFIX "error"
 
+#ifndef MINIMAL_ZIC
+
+#define OK() \
+    ZIC_res = OK; \
+    goto exit;
+
+#define ERROR(ERR) \
+    ZIC_res = ERR; \
+    goto errexit;
+
+#define FAIL() \
+    ZIC_res = FAIL; \
+    goto errexit;
+
+#else
+#define OK() \
+    DO_DEFER();\
+    return OK;
+
+#define ERROR(ERR) \
+    DO_ERRDEFER();\
+    DO_DEFER();\
+    return ERR;
+
+#define FAIL() \
+    DO_ERRDEFER();\
+    DO_DEFER();\
+    return FAIL; 
+
+#endif
+
 #define CATCH(ERR, ...) \
     fprintf(stderr, ERROR_PREFIX); \
     fprintf(stderr, ERR, ##__VA_ARGS__); \
     fprintf(stderr, "\n"); \
-    return FAIL;
+    FAIL();
 
-#define CATCH_SYS() perror(ERROR_PREFIX); return FAIL;
+#define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
 
 #define UNWRAP(EXP) { \
     int res = (EXP); \
-    if (res < 0) return ERR_SYS; \
-    else if (res) return res; }
+    if (res < 0) ERROR(ERR_SYS); \
+    else if (res) ERROR(res); }
 
 #define UNWRAP_NEG(EXP) { \
     int res = (EXP); \
-    if (res < 0) return ERR_SYS; }
+    if (res < 0) ERROR(ERR_SYS); }
 
 #define UNWRAP_SYS(EXP) UNWRAP(EXP)
 
@@ -28,69 +59,69 @@
 
 #define UNWRAP_LOCAL(EXP) { \
     int res = (EXP); \
-    if (res < 0) return ERR_LOCAL; \
-    else if (res) return res; }
+    if (res < 0) ERROR(ERR_LOCAL) \
+    else if (res) ERROR(res) }
 
 #define UNWRAP_NLOCAL(EXP) { \
     int res = (EXP); \
-    if (res < 0) return ERR_LOCAL; \
+    if (res < 0) ERROR(ERR_LOCAL) \
 }
 
 #define UNWRAP_USER(EXP) { \
     int res = (EXP); \
-    if (res < 0) return ERR_USER; \
-    else if (res) return res; }
+    if (res < 0) ERROR(ERR_USER) \
+    else if (res) ERROR(res) }
 
 #define UNWRAP_NUSER(EXP) { \
     int res = (EXP); \
-    if (res < 0) return ERR_USER;
+    if (res < 0) ERROR(ERR_USER)
 
 #define UNWRAP_ERR(EXP, ERR) { \
     const int res = (EXP); \
-    if (res < 0) return ERR; \
-    else if (res) return res; }
+    if (res < 0) ERROR(ERR) \
+    else if (res) ERROR(res) }
 
 #define UNWRAP_NERR(EXP, ERR) { \
     const int res = (EXP); \
-    if (res < 0) return ERR; 
+    if (res < 0) ERROR(ERR) 
 
 #define UNWRAP_PTR(EXP) { \
     const void *res = (EXP); \
-    if (!res) return ERR_SYS; }
+    if (!res) ERROR(ERR_SYS) }
 
 #define UNWRAP_PTR_SYS(EXP) UNWRAP_PTR(EXP)
 
 #define UNWRAP_PTR_LOCAL(EXP) { \
     const void *res = (EXP); \
-    if (!res) return ERR_LOCAL; }
+    if (!res) ERROR(ERR_LOCAL) }
 
 #define UNWRAP_PTR_USER(EXP) { \
     const void *res = (EXP); \
-    if (!res) return ERR_USER; }
+    if (!res) ERROR(ERR_USER) }
 
 #define UNWRAP_PTR_ERR(EXP, ERR) { \
     const void *res = (EXP); \
-    if (!res) return ERR; }
+    if (!res) ERROR(ERR) }
 
 #ifndef MINIMAL_ZIC
 
 #define PTR_UNWRAP(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) return ERR_SYS; }
+    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS) }
 
 #define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
 
 #define PTR_UNWRAP_LOCAL(EXP) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) return ERR_LOCAL; }
+    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_LOCAL) }
 
 #define PTR_UNWRAP_USER(EXP) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) return ERR_USER; }
+    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_USER) }
 
 #define PTR_UNWRAP_ERR(EXP, ERR) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) return ERR; }
+    { if (!ZIC_unwrap_ptr_res) ERROR(ERR) }
 
 #endif
 
@@ -150,36 +181,5 @@ typedef int result;
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res
 
 #define ELSE(EXP) : (EXP) ;
-
-#ifndef MINIMAL_ZIC
-
-#define OK() \
-    ZIC_res = OK; \
-    goto exit;
-
-#define ERROR(ERR) \
-    ZIC_res = ERR; \
-    goto errexit;
-
-#define FAIL() \
-    ZIC_res = FAIL; \
-    goto errexit;
-
-#else
-#define OK() \
-    DO_DEFER();\
-    return OK;
-
-#define ERROR(ERR) \
-    DO_ERRDEFER();\
-    DO_DEFER();\
-    return ERR;
-
-#define FAIL() \
-    DO_ERRDEFER();\
-    DO_DEFER();\
-    return FAIL; 
-
-#endif
 
 #endif
