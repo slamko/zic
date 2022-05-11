@@ -139,11 +139,13 @@ void errdefer8(void);
 #else 
 
 #define DEFER1(LABEL, ST) goto next##LABEL; defer##LABEL: defer1: ST; goto defer2; next##LABEL:;
-#define DEFER2(LABEL, ST) goto next##LABEL; defer##LABEL: defer2: goto defer1; ST; goto defer3; next##LABEL:;
-#define DEFER3(LABEL, ST) goto next##LABEL; defer##LABEL: defer3: goto defer1; goto defer2; ST; goto defer4; next##LABEL:;
-#define DEFER4(LABEL, ST) goto next##LABEL; defer##LABEL: defer3: goto defer1; goto defer2; ST; goto exit; next##LABEL:;
+#define DEFER2(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer2: ST; goto defer3; next##LABEL:;
+#define DEFER3(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer3: ST; goto defer4; next##LABEL:;
+#define DEFER4(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer4: ST; goto exit; next##LABEL:;
 
-#define FINAL(ST)
+#define DEFER1_FINAL(ST) goto next_final; defer##final: defer1: ST; goto exit; next_final:;
+#define DEFER2_FINAL(ST) goto next_final; defer##final: defer2: ST; goto exit; next_final:;
+#define DEFER3_FINAL(ST) goto next_final; defer##final: defer3: ST; goto exit; next_final:;
 
 #define ERR_CLEANUP(LABEL, ERR) ZIC_res = ERR; goto LABEL;
 
@@ -154,6 +156,8 @@ void errdefer8(void);
 #define DO_ERRDEFER()
 
 #define INIT_DEFER()
+
+#define NO_CLEANUP() deferfinal: ;
 
 #endif
 /*

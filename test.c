@@ -6,7 +6,7 @@
 #include "zic.h"
 
 result
-defer_close_file(int argc, char **argv) DEF
+defer_close_file(int argc, char **argv) DEF_CLEAN
     char file[] = "file1";
     FILE *fp;
     char ch;
@@ -21,30 +21,30 @@ END
 
 
 result
-defer_free_t(int argc, char **argv) DEF 
+defer_free_t(int argc, char **argv) DEF
     char *str = NULL;
     FILE *fp = NULL;
 
     fp = PTR_UNWRAP (fopen("file1", "r"))
+    DEFER1(close_file, fclose(fp))
 
     str = PTR_UNWRAP (calloc(10, sizeof(*str)), close_file)
+    DEFER2_FINAL(free(str))
 
     if (argc != 2) {
-        ERROR(ERR_USER, free_str)
+        ERROR(ERR_USER)
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERROR(ERR_USER, free_str)
+        ERROR(ERR_USER)
     }
-
+    
     UNWRAP_PTR(strcpy(str, argv[1]));
     printf("%s\n", str);
-
-    CLEANUP(free_str, free(str))
-    CLEANUP(close_file, fclose(fp))
+    OK()
 END
 
 int
 main(int argc, char **argv) DEF
-    return defer_close_file(argc, argv);
+    return defer_free_t(argc, argv);
 END

@@ -9,22 +9,22 @@
 
 #define OK() \
     ZIC_res = OK; \
-    goto exit;
+    goto deferfinal;
 
 #define ERROR_F(ERR) \
     ZIC_res = ERR; \
-    goto errexit;
+    goto deferfinal;
 
 #define ERROR_LABEL(ERR, LABEL) \
     ZIC_res = ERR; \
-    goto LABEL;
+    goto defer##LABEL;
 
 #define GET_ERROR_MACRO(_A1, _A2, ERROR_MACRO,...) ERROR_MACRO
 #define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_F)(__VA_ARGS__)
 
 #define FAIL() \
     ZIC_res = FAIL; \
-    goto errexit;
+    goto deferfinal;
 
 #else
 #define OK() \
@@ -163,6 +163,8 @@ typedef int result;
     void *ZIC_unwrap_ptr_res = NULL; \
     INIT_DEFER()
 #endif
+
+#define DEF_CLEAN DEF; NO_CLEANUP()
 
 #else
 #define DEF {
