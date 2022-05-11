@@ -137,11 +137,14 @@ void errdefer8(void);
     errdefer7(); \
     errdefer8(); 
 #else 
-/*
-#define DEFER1(LABEL, ST) goto next##LABEL; defer##LABEL: defer1: ST; goto exit; next##LABEL:;
-#define DEFER2(LABEL, ST) goto next##LABEL; defer##LABEL: defer2: goto defer1; ST; goto exit; next##LABEL:;
-#define DEFER3(LABEL, ST) goto next##LABEL; defer##LABEL: defer3: goto defer1; goto defer2; ST; goto exit; next##LABEL:;
-*/
+
+#define DEFER1(LABEL, ST) goto next##LABEL; defer##LABEL: defer1: ST; goto defer2; next##LABEL:;
+#define DEFER2(LABEL, ST) goto next##LABEL; defer##LABEL: defer2: goto defer1; ST; goto defer3; next##LABEL:;
+#define DEFER3(LABEL, ST) goto next##LABEL; defer##LABEL: defer3: goto defer1; goto defer2; ST; goto defer4; next##LABEL:;
+#define DEFER4(LABEL, ST) goto next##LABEL; defer##LABEL: defer3: goto defer1; goto defer2; ST; goto exit; next##LABEL:;
+
+#define FINAL(ST)
+
 #define ERR_CLEANUP(LABEL, ERR) ZIC_res = ERR; goto LABEL;
 
 #define CLEANUP(LABEL, CLEAN) LABEL: CLEAN;

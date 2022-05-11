@@ -23,23 +23,26 @@ END
 result
 defer_free_t(int argc, char **argv) DEF 
     char *str = NULL;
+    FILE *fp = NULL;
 
-    str = PTR_UNWRAP (calloc(10, sizeof(*str)))
+    fp = PTR_UNWRAP (fopen("file1", "r"))
+
+    str = PTR_UNWRAP (calloc(10, sizeof(*str)), close_file)
 
     if (argc != 2) {
-        ERR_CLEANUP(free_str, ERR_USER)
+        ERROR(ERR_USER, free_str)
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERR_CLEANUP(free_str, ERR_USER)
+        ERROR(ERR_USER, free_str)
     }
 
     UNWRAP_PTR(strcpy(str, argv[1]));
     printf("%s\n", str);
 
     CLEANUP(free_str, free(str))
-    OK()
-END()
+    CLEANUP(close_file, fclose(fp))
+END
 
 int
 main(int argc, char **argv) DEF

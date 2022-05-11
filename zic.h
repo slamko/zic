@@ -11,9 +11,16 @@
     ZIC_res = OK; \
     goto exit;
 
-#define ERROR(ERR) \
+#define ERROR_F(ERR) \
     ZIC_res = ERR; \
     goto errexit;
+
+#define ERROR_LABEL(ERR, LABEL) \
+    ZIC_res = ERR; \
+    goto LABEL;
+
+#define GET_ERROR_MACRO(_A1, _A2, ERROR_MACRO,...) ERROR_MACRO
+#define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_F)(__VA_ARGS__)
 
 #define FAIL() \
     ZIC_res = FAIL; \
@@ -105,9 +112,17 @@
 
 #ifndef MINIMAL_ZIC
 
-#define PTR_UNWRAP(EXP) \
+#define PTR_UNWRAP_F(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS) }
+
+#define PTR_UNWRAP_LABEL(EXP, LABEL) \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS, LABEL) }
+
+#define GET_PTR_UNWRAP(_A1, _A2, PTR_UNWRAP_MACRO,...) PTR_UNWRAP_MACRO
+
+#define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_F)(__VA_ARGS__)
 
 #define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
 
