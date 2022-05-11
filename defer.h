@@ -138,14 +138,39 @@ void errdefer8(void);
     errdefer8(); 
 #else 
 
-#define DEFER1(LABEL, ST) goto next##LABEL; defer##LABEL: defer1: ST; goto defer2; next##LABEL:;
-#define DEFER2(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer2: ST; goto defer3; next##LABEL:;
-#define DEFER3(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer3: ST; goto defer4; next##LABEL:;
-#define DEFER4(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer4: ST; goto exit; next##LABEL:;
+#define DEFER1(LABEL, ST)  goto next##LABEL; defer##LABEL: defer1: ST; goto defer2; next##LABEL:;
+#define DEFER2(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer2:  ST; goto defer3; next##LABEL:;
+#define DEFER3(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer3:  ST; goto defer4; next##LABEL:;
+#define DEFER4(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer4:  ST; goto defer5; next##LABEL:;
+#define DEFER5(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer5:  ST; goto defer6; next##LABEL:;
+#define DEFER6(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer6:  ST; goto defer7; next##LABEL:;
+#define DEFER7(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer7:  ST; goto defer8; next##LABEL:;
+#define DEFER8(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer8:  ST; goto defer9; next##LABEL:;
+#define DEFER9(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer9:  ST; goto defer10; next##LABEL:;
+#define DEFER10(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer10: ST; goto defer11; next##LABEL:;
+#define DEFER11(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer11: ST; goto defer12; next##LABEL:;
+#define DEFER12(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer12: ST; goto defer13; next##LABEL:;
+#define DEFER13(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer13: ST; goto defer14; next##LABEL:;
+#define DEFER14(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer14: ST; goto defer15; next##LABEL:;
+#define DEFER15(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer15: ST; goto defer16; next##LABEL:;
+#define DEFER16(LABEL, ST) goto next##LABEL; defer##LABEL: goto defer1; defer16: ST; goto exit; next##LABEL:;
 
-#define DEFER1_FINAL(ST) goto next_final; defer##final: defer1: ST; goto exit; next_final:;
-#define DEFER2_FINAL(ST) goto next_final; defer##final: defer2: ST; goto exit; next_final:;
-#define DEFER3_FINAL(ST) goto next_final; defer##final: defer3: ST; goto exit; next_final:;
+#define DEFER1_FINAL(ST)  goto next_final; defer##final: defer1:  ST; goto exit; next_final:;
+#define DEFER2_FINAL(ST)  goto next_final; defer##final: defer2:  ST; goto exit; next_final:;
+#define DEFER3_FINAL(ST)  goto next_final; defer##final: defer3:  ST; goto exit; next_final:;
+#define DEFER4_FINAL(ST)  goto next_final; defer##final: defer4:  ST; goto exit; next_final:;
+#define DEFER5_FINAL(ST)  goto next_final; defer##final: defer5:  ST; goto exit; next_final:;
+#define DEFER6_FINAL(ST)  goto next_final; defer##final: defer6:  ST; goto exit; next_final:;
+#define DEFER7_FINAL(ST)  goto next_final; defer##final: defer7:  ST; goto exit; next_final:;
+#define DEFER8_FINAL(ST)  goto next_final; defer##final: defer8:  ST; goto exit; next_final:;
+#define DEFER9_FINAL(ST)  goto next_final; defer##final: defer9:  ST; goto exit; next_final:;
+#define DEFER10_FINAL(ST) goto next_final; defer##final: defer10: ST; goto exit; next_final:;
+#define DEFER11_FINAL(ST) goto next_final; defer##final: defer11: ST; goto exit; next_final:;
+#define DEFER12_FINAL(ST) goto next_final; defer##final: defer12: ST; goto exit; next_final:;
+#define DEFER13_FINAL(ST) goto next_final; defer##final: defer13: ST; goto exit; next_final:;
+#define DEFER14_FINAL(ST) goto next_final; defer##final: defer14: ST; goto exit; next_final:;
+#define DEFER15_FINAL(ST) goto next_final; defer##final: defer15: ST; goto exit; next_final:;
+#define DEFER16_FINAL(ST) goto next_final; defer##final: defer16: ST; goto exit; next_final:;
 
 #define ERR_CLEANUP(LABEL, ERR) ZIC_res = ERR; goto LABEL;
 
@@ -160,96 +185,3 @@ void errdefer8(void);
 #define NO_CLEANUP() deferfinal: ;
 
 #endif
-/*
-#elif defined ALLOW_HIDDEN_STACKALLOC
-
-typedef void(*defer_free)(void *);
-
-typedef int(*defer_fclose)(FILE *);
-
-typedef int(*defer_str)(const char *, ...);
-
-typedef int(*defer_closedir)(DIR *);
-
-typedef unsigned short defer_cnt;
-
-#define DEFERS_COUNT 8
-
-#define USE_DEFER
-
-#define INIT_DEFER() \
-    struct defer_arr ZIC_defer_arr = {0}; \
-    struct defer_arr ZIC_errdefer_arr = {0};
-
-#define DO_DEFER() \
-    for(int deferid = 0; deferid < ZIC_defer_arr.free_cnt; deferid++) \
-    free(ZIC_defer_arr.free_args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_defer_arr.fclose_cnt; deferid++) \
-    fclose(ZIC_defer_arr.fclose_args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_defer_arr.closedir_cnt; deferid++) \
-    closedir(ZIC_defer_arr.closedir_args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_defer_arr.str_cnt; deferid++) \
-    ZIC_defer_arr.defers_str[deferid](ZIC_defer_arr.str_args[deferid]); \
-
-#define DO_ERRDEFER() \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.free_cnt; deferid++) \
-    free(ZIC_errdefer_arr.free_args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.fclose_cnt; deferid++) \
-    fclose(ZIC_errdefer_arr.fclose_args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.closedir_cnt; deferid++) \
-    closedir(ZIC_errdefer_arr.closedir_args[deferid]); \
-    for(int deferid = 0; deferid < ZIC_errdefer_arr.str_cnt; deferid++) \
-    ZIC_errdefer_arr.defers_str[deferid](ZIC_errdefer_arr.str_args[deferid]); \
-
-struct defer_arr {
-    defer_free defers_free[DEFERS_COUNT];
-    defer_fclose defers_fclose[DEFERS_COUNT];
-    defer_closedir defers_closedir[DEFERS_COUNT];
-    defer_str defers_str[DEFERS_COUNT];
-    void *free_args[DEFERS_COUNT];
-    FILE *fclose_args[DEFERS_COUNT];
-    DIR *closedir_args[DEFERS_COUNT];
-    char *str_args[DEFERS_COUNT];
-    defer_cnt free_cnt;
-    defer_cnt fclose_cnt;
-    defer_cnt closedir_cnt;
-    defer_cnt str_cnt;
-};
-
-#define ERRDEFER_FREE(PTR) \
-    ZIC_errdefer_arr.free_args[ZIC_errdefer_arr.free_cnt] = PTR; \
-    ZIC_errdefer_arr.void_cnt++;
-
-#define ERRDEFER_FCLOSE(PTR) \
-    ZIC_errdefer_arr.fclose_args[ZIC_errdefer_arr.fclose_cnt] = PTR; \
-    ZIC_errdefer_arr.fclose_cnt++;
-
-#define ERRDEFER_CLOSE_DIR(PTR) \
-    ZIC_errdefer_arr.closedir_args[ZIC_errdefer_arr.closedir_cnt] = PTR; \
-    ZIC_errdefer_arr.closedir_cnt++;
-
-#define ERRDEFER_STR(FUNC, PTR) \
-    ZIC_errdefer_arr.defers_str[ZIC_errdefer_arr.str_cnt] = FUNC; \
-    ZIC_errdefer_arr.str_args[ZIC_errdefer_arr.str_cnt] = PTR; \
-    ZIC_errdefer_arr.str_cnt++;
-
-
-
-#define DEFER_FREE(PTR) \
-    ZIC_defer_arr.free_args[ZIC_defer_arr.free_cnt] = PTR; \
-    ZIC_defer_arr.free_cnt++;
-
-#define DEFER_FCLOSE(PTR) \
-    ZIC_defer_arr.fclose_args[ZIC_defer_arr.fclose_cnt] = PTR; \
-    ZIC_defer_arr.fclose_cnt++;
-
-#define DEFER_CLOSE_DIR(PTR) \
-    ZIC_defer_arr.closedir_args[ZIC_defer_arr.closedir_cnt] = PTR; \
-    ZIC_defer_arr.closedir_cnt++;
-
-#define DEFER_STR(FUNC, PTR) \
-    ZIC_defer_arr.defers_str[ZIC_defer_arr.str_cnt] = FUNC; \
-    ZIC_defer_arr.str_args[ZIC_defer_arr.str_cnt] = PTR; \
-    ZIC_defer_arr.str_cnt++;
-
-#endif*/

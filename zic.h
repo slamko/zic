@@ -164,20 +164,27 @@ typedef int result;
     INIT_DEFER()
 #endif
 
-#define DEF_CLEAN DEF; NO_CLEANUP()
-
 #else
 #define DEF {
 #endif
 
 #ifndef MINIMAL_ZIC
-#define END ;\
+#define END goto deferfinal; \
     errexit: \
     DO_ERRDEFER(); \
     exit: \
     DO_DEFER(); \
     return ZIC_res; \
 }
+
+#define END_CLEAN deferfinal: ; \
+    errexit: \
+    DO_ERRDEFER(); \
+    exit: \
+    DO_DEFER(); \
+    return ZIC_res; \
+}
+
 #else
 #define END }
 #endif

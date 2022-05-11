@@ -6,18 +6,18 @@
 #include "zic.h"
 
 result
-defer_close_file(int argc, char **argv) DEF_CLEAN
+defer_close_file(int argc, char **argv) DEF
     char file[] = "file1";
     FILE *fp;
     char ch;
 
-    fp = fopen(file, "r");
+    fp = PTR_UNWRAP (fopen(file, "r"))
+    DEFER1_FINAL(fclose(fp))
     printf("%p\n", fp);
 
     ch = fgetc(fp);
-    fputc(ch, stdout);
-    FAIL()
-END
+    UNWRAP_NEG (fputc(ch, stdout))
+END_CLEAN
 
 
 result
@@ -47,4 +47,4 @@ END
 int
 main(int argc, char **argv) DEF
     return defer_free_t(argc, argv);
-END
+END_CLEAN
