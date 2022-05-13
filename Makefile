@@ -5,7 +5,7 @@ LIBS=-Ilib
 all: $(TARGET)
 
 $(TARGET): test/test.c
-	$(CC) -g $(LIBS) $^ -o $@
+	$(CC) -ggdb $(LIBS) $^ -o $@
 
 .SILENT: test
 

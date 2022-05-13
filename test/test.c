@@ -17,7 +17,7 @@ defer_close_file(int argc, char **argv) DEF
 
     ch = fgetc(fp);
     UNWRAP_NEG (fputc(ch, stdout), final)
-END_CLEAN
+END
 
 
 result
@@ -25,28 +25,30 @@ defer_free_t(int argc, char **argv) DEF
     char *str = NULL;
     FILE *fp = NULL;
 
-    fp = PTR_UNWRAP (fopen("file1", "r"))
+    fp = PTR_UNWRAP_CLEAN (fopen("file1", "r"))
     DEFER1(close_file, fclose(fp))
 
     str = PTR_UNWRAP (calloc(10, sizeof(*str)), close_file)
     DEFER2_FINAL(free(str))
 
     if (argc != 2) {
-        ERROR(ERR_USER, final)
+        ERROR(ERR_USER)
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERROR(ERR_USER, final)
+        ERROR(ERR_USER)
     }
     
     strcpy(str, argv[1]);
-    UNWRAP (puts(str), final);
+    UNWRAP (puts(str));
     OK()
 END
 
 int
 main(int argc, char **argv) DEF
-    MATCH defer_free_t(argc, argv) WITH (
-        OK: return OK
+    result res = defer_free_t(argc, argv); 
+    MATCH res WITH (
+        ERR_SYS: return OK,
+        ERR_USER: return 67
     )
 END_CLEAN

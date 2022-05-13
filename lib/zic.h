@@ -79,13 +79,13 @@
 
 #define UNWRAP_CLEAN(EXP) { \
     int res = (EXP); \
-    if (res < 0) ERROR_CLEAN(ERR_SYS); \
-    else if (res) ERROR_CLEAN(res); }
+    if (res < 0) { ERROR_CLEAN(ERR_SYS); } \
+    else if (res) { ERROR_CLEAN(res); } }
 
 #define UNWRAP_FINAL(EXP) { \
     int res = (EXP); \
-    if (res < 0) ERROR(ERR_SYS); \
-    else if (res) ERROR(res); }
+    if (res < 0) { ERROR(ERR_SYS); } \
+    else if (res) { ERROR(res); } }
 
 #define UNWRAP_LABEL(EXP, LABEL) { \
     int res = (EXP); \
@@ -175,9 +175,9 @@
 
 #ifndef MINIMAL_ZIC
 
-#define PTR_UNWRAP_FINAL_CLEAN(EXP) \
-    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR_CLEAN(ERR_SYS) }
+#define PTR_UNWRAP_CLEAN(EXP) \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; 
+    //{ if (!ZIC_unwrap_ptr_res) { puts("ewfwfe"); ERROR_CLEAN(ERR_SYS) } }
 
 #define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
@@ -278,14 +278,23 @@ typedef int result;
 
 #define CASE_NONE() 
 
-#define CASE1(CASE) case CASE;  
-
-#define GET_CASE(_A1, PTR_UNWRAP_MACRO,...) PTR_UNWRAP_MACRO
+#define CASE(CASE_EXP) case CASE_EXP  
+/*
+#define GET_CASE(_A1, CASE_MACRO,...) CASE_MACRO
 
 #define CASE(...) GET_CASE(__VA_ARGS__, CASE1, CASE_NONE)(__VA_ARGS__)
+*/
+#define WITH4(CASEEXP1, CASEEXP2, CASEEXP3, CASEEXP4) ) { CASE(CASEEXP1); CASE(CASEEXP2); CASE(CASEEXP3); CASE(CASEXP4); }
 
-#define WITH_CASE(CASE1, ...) CASE(CASE1); WITH_CASE(__VA_ARGS__);
+#define WITH3(CASEEXP1, CASEEXP2, CASEEXP3) ) { CASE(CASEEXP1); CASE(CASEEXP2); CASE(CASEXP3); }
 
-#define WITH(...) ) { WITH_CASE(__VA_ARGS__) }
+#define WITH2(CASEEXP1, CASEEXP2) ) { CASE(CASEEXP1); CASE(CASEEXP2); }
+
+#define WITH1(CASEEXP) ) { CASE(CASEEXP) }
+/*_A5, _A6, _A7, _A8, _A9, _A10, _A11, _A12, _A13, _A14, _A15, _A16,*/
+#define GET_WITH(_A1, _A2, _A3, _A4,  WITH_MACRO,...) WITH_MACRO
+
+#define WITH(...) GET_WITH(__VA_ARGS__, WITH4, WITH3, WITH2, WITH1)(__VA_ARGS__)
+
 
 #endif
