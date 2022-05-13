@@ -1,13 +1,14 @@
 CC=gcc
-TARGET=test
+TARGET=test_zic
+LIBS=-Ilib
 
 all: $(TARGET)
 
 $(TARGET): test.c
-	$(CC) -g $^ -o $@
+	$(CC) -g $(LIBS) $^ -o $@
 
-.SILENT: run
+.SILENT: test
 
-run: $(TARGET)
+test: $(TARGET)
 	./$(TARGET) &
 	echo " "
