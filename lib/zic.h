@@ -7,24 +7,50 @@
 
 #ifndef MINIMAL_ZIC
 
-#define OK() \
+#define OK_CLEAN() \
+    ZIC_res = OK; \
+    goto exit;
+
+#define OK_FINAL() \
     ZIC_res = OK; \
     goto deferfinal;
 
-#define ERROR_FORCE(ERR) \
+#define OK_LABEL(LABEL) \
+    ZIC_res = OK; \
+    goto defer##LABEL;
+
+#define GET_OK_MACRO(_A1, _A2, OK_MACRO,...) OK_MACRO
+#define OK(...) GET_OK_MACRO(__VA_ARGS__, OK_LABEL, OK_FINAL)(__VA_ARGS__)
+
+#define ERROR_CLEAN(ERR) \
     ZIC_res = ERR; \
     goto exit;
+
+#define ERROR_FINAL(ERR) \
+    ZIC_res = ERR; \
+    goto deferfinal;
 
 #define ERROR_LABEL(ERR, LABEL) \
     ZIC_res = ERR; \
     goto defer##LABEL;
 
 #define GET_ERROR_MACRO(_A1, _A2, ERROR_MACRO,...) ERROR_MACRO
-#define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FORCE)(__VA_ARGS__)
+#define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
 
-#define FAIL() \
+#define FAIL_CLEAN() \
+    ZIC_res = FAIL; \
+    goto exit;
+
+#define FAIL_FINAL() \
     ZIC_res = FAIL; \
     goto deferfinal;
+
+#define FAIL_LABEL(LABEL) \
+    ZIC_res = FAIL; \
+    goto defer##LABEL;
+
+#define GET_FAIL_MACRO(_A1, _A2, FAIL_MACRO,...) FAIL_MACRO
+#define FAIL(...) GET_FAIL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
 #else
 #define OK() \
@@ -51,7 +77,12 @@
 
 #define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
 
-#define UNWRAP_FORCE(EXP) { \
+#define UNWRAP_CLEAN(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR_SYS); \
+    else if (res) ERROR_CLEAN(res); }
+
+#define UNWRAP_FINAL(EXP) { \
     int res = (EXP); \
     if (res < 0) ERROR(ERR_SYS); \
     else if (res) ERROR(res); }
@@ -62,10 +93,13 @@
     else if (res) ERROR(res, LABEL); }
 
 #define GET_UNWRAP_MACRO(_A1, _A2, UNWRAP_MACRO,...) UNWRAP_MACRO
-#define UNWRAP(...) GET_UNWRAP_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FORCE)(__VA_ARGS__)
+#define UNWRAP(...) GET_UNWRAP_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
+#define UNWRAP_NEG_CLEAN(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR_SYS); }
 
-#define UNWRAP_NEG_FORCE(EXP) { \
+#define UNWRAP_NEG_FINAL(EXP) { \
     int res = (EXP); \
     if (res < 0) ERROR(ERR_SYS); }
 
@@ -75,8 +109,7 @@
 
 #define GET_UNWRAP_NEG(_A1, _A2, UNWRAP_NEG_MACRO,...) UNWRAP_NEG_MACRO
 
-#define UNWRAP_NEG(...) GET_UNWRAP_NEG(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FORCE)(__VA_ARGS__)
-
+#define UNWRAP_NEG(...) GET_UNWRAP_NEG(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_SYS(EXP) UNWRAP(EXP)
 
@@ -110,17 +143,21 @@
     const int res = (EXP); \
     if (res < 0) ERROR(ERR) 
 
-#define UNWRAP_PTR_FORCE(EXP) { \
+#define UNWRAP_PTR_CLEAN(EXP) { \
+    const void *res = (EXP); \
+    if (!res) ERROR_CLEAN(ERR_SYS) }
+
+#define UNWRAP_PTR_FINAL(EXP) { \
     const void *res = (EXP); \
     if (!res) ERROR(ERR_SYS) }
 
 #define UNWRAP_PTR_LABEL(EXP, LABEL) { \
     const void *res = (EXP); \
-    if (!res) ERROR(ERR_SYS, LABEL) }
+    if (!res) ERROR(ERR_SYS, defer##LABEL) }
 
 #define GET_UNWRAP_PTR(_A1, _A2, UNWRAP_PTR_MACRO,...) UNWRAP_PTR_MACRO
 
-#define UNWRAP_PTR(...) GET_UNWRAP_PTR(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FORCE)(__VA_ARGS__)
+#define UNWRAP_PTR(...) GET_UNWRAP_PTR(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_PTR_SYS(EXP) UNWRAP_PTR(EXP)
 
@@ -138,7 +175,11 @@
 
 #ifndef MINIMAL_ZIC
 
-#define PTR_UNWRAP_FORCE(EXP) \
+#define PTR_UNWRAP_FINAL_CLEAN(EXP) \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) ERROR_CLEAN(ERR_SYS) }
+
+#define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS) }
 
@@ -148,7 +189,7 @@
 
 #define GET_PTR_UNWRAP(_A1, _A2, PTR_UNWRAP_MACRO,...) PTR_UNWRAP_MACRO
 
-#define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FORCE)(__VA_ARGS__)
+#define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FINAL)(__VA_ARGS__)
 
 #define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
 

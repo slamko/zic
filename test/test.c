@@ -39,12 +39,16 @@ defer_free_t(int argc, char **argv) DEF
         ERROR(ERR_USER, final)
     }
     
-    UNWRAP_PTR(strcpy(str, argv[1]), final);
+    strcpy(str, argv[1]);
     UNWRAP (puts(str), final);
     OK()
 END
 
 int
 main(int argc, char **argv) DEF
-    return defer_free_t(argc, argv);
+    MATCH defer_free_t(argc, argv) WITH (
+        OK: return OK,
+        ERR_USER: CATCH("Nu i che tu"),
+        default: FAIL() 
+    )
 END_CLEAN
