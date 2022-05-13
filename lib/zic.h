@@ -273,4 +273,19 @@ typedef int result;
 
 #define ELSE(EXP) : (EXP) ;
 
+
+#define MATCH switch(
+
+#define CASE_NONE() 
+
+#define CASE1(CASE) case CASE;  
+
+#define GET_CASE(_A1, PTR_UNWRAP_MACRO,...) PTR_UNWRAP_MACRO
+
+#define CASE(...) GET_CASE(__VA_ARGS__, CASE1, CASE_NONE)(__VA_ARGS__)
+
+#define WITH_CASE(CASE1, ...) CASE(CASE1); WITH_CASE(__VA_ARGS__);
+
+#define WITH(...) ) { WITH_CASE(__VA_ARGS__) }
+
 #endif

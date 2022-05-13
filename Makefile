@@ -4,7 +4,7 @@ LIBS=-Ilib
 
 all: $(TARGET)
 
-$(TARGET): test.c
+$(TARGET): test/test.c
 	$(CC) -g $(LIBS) $^ -o $@
 
 .SILENT: test

@@ -47,8 +47,6 @@ END
 int
 main(int argc, char **argv) DEF
     MATCH defer_free_t(argc, argv) WITH (
-        OK: return OK,
-        ERR_USER: CATCH("Nu i che tu"),
-        default: FAIL() 
+        OK: return OK
     )
 END_CLEAN
