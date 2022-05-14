@@ -11,12 +11,12 @@ defer_close_file(int argc, char **argv) DEF
     FILE *fp;
     char ch;
 
-    fp = PTR_UNWRAP (fopen(file, "r"))
+    fp = PTR_UNWRAP_CLEAN (fopen(file, "r"))
     DEFER1_FINAL(fclose(fp))
     printf("%p\n", fp);
 
     ch = fgetc(fp);
-    UNWRAP_NEG (fputc(ch, stdout), final)
+    UNWRAP_NEG (fputc(ch, stdout))
 END
 
 
@@ -41,7 +41,6 @@ defer_free_t(int argc, char **argv) DEF
     
     strcpy(str, argv[1]);
     UNWRAP (puts(str));
-    OK()
 END
 
 int

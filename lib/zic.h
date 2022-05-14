@@ -1,7 +1,7 @@
 #ifndef ZIC_ERROR_HANDLING
 #define ZIC_ERROR_HANDLING
 
-#define GET_LABEL_MACRO(_A1, _A2, MACRO) MACRO
+#define GET_LABEL_MACRO(_A1, _A2, MACRO, ...) MACRO
 
 #define ERROR_PREFIX "error"
 
@@ -107,11 +107,13 @@
 #define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
 #endif
 
-
+#ifdef FULL_API
 #define UNWRAP_CLEAN(EXP) { \
     int res = (EXP); \
     if (res < 0) { ERROR_CLEAN(ERR_SYS); } \
     else if (res) { ERROR_CLEAN(res); } }
+
+#endif
 
 #define UNWRAP_FINAL(EXP) { \
     int res = (EXP); \
@@ -125,9 +127,12 @@
 
 #define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
+#ifdef FULL_API
 #define UNWRAP_NEG_CLEAN(EXP) { \
     int res = (EXP); \
     if (res < 0) ERROR_CLEAN(ERR_SYS); }
+
+#endif
 
 #define UNWRAP_NEG_FINAL(EXP) { \
     int res = (EXP); \
@@ -137,21 +142,50 @@
     int res = (EXP); \
     if (res < 0) ERROR(ERR_SYS, LABEL); }
 
-#define UNWRAP_NEG(...) GET_UNWRAP_NEG(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
+#define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
 
 #define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
 
-#define UNWRAP_LOCAL(EXP) { \
+#ifdef FULL_API
+#define UNWRAP_LOCAL_CLEAN(EXP) { \
     int res = (EXP); \
-    if (res < 0) ERROR(ERR_LOCAL) \
-    else if (res) ERROR(res) }
+    if (res < 0) ERROR_CLEAN(ERR_LOCAL) \
+    else if (res) ERROR_CLEAN(res) }
 
-#define UNWRAP_NLOCAL(EXP) { \
+#endif
+
+#define UNWRAP_LOCAL_FINAL(EXP) { \
     int res = (EXP); \
-    if (res < 0) ERROR(ERR_LOCAL) \
+    if (res < 0) ERROR_FINAL(ERR_LOCAL) \
+    else if (res) ERROR_FINAL(res) }
+
+#define UNWRAP_LOCAL_LABEL(EXP, LABEL) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_LABEL(ERR_LOCAL, LABEL) \
+    else if (res) ERROR_LABEL(res, LABEL) }
+
+#define UNWRAP_LOCAL(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LOCAL_LABEL, UNWRAP_LOCAL_FINAL)(__VA_ARGS__)
+
+#ifdef FULL_API
+#define UNWRAP_NLOCAL_CLEAN(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR_LOCAL) \
+
+#endif
+
+#define UNWRAP_NLOCAL_FINAL(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_FINAL(ERR_LOCAL) \
 }
+
+#define UNWRAP_NLOCAL_LABEL(EXP, LABEL) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_LABEL(ERR_LOCAL, LABEL) \
+}
+
+#define UNWRAP_NLOCAL(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NLOCAL_LABEL, UNWRAP_NLOCAL_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_USER(EXP) { \
     int res = (EXP); \
@@ -171,9 +205,12 @@
     const int res = (EXP); \
     if (res < 0) ERROR(ERR) 
 
+#ifdef FULL_API
 #define UNWRAP_PTR_CLEAN(EXP) { \
     const void *res = (EXP); \
     if (!res) ERROR_CLEAN(ERR_SYS) }
+
+#endif
 
 #define UNWRAP_PTR_FINAL(EXP) { \
     const void *res = (EXP); \
@@ -202,9 +239,12 @@
 
 #ifndef MINI_ZIC
 
+#ifdef FULL_API
 #define PTR_UNWRAP_CLEAN(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) { ERROR_CLEAN(ERR_SYS) } }
+
+#endif
 
 #define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
@@ -214,7 +254,7 @@
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS, LABEL) }
 
-#define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FINAL)(__VA_ARGS__)
+#define PTR_UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FINAL)(__VA_ARGS__)
 
 #define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
 
