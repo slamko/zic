@@ -1,11 +1,17 @@
 #ifndef ZIC_ERROR_HANDLING
 #define ZIC_ERROR_HANDLING
 
-#include "defer.h"
+#define GET_LABEL_MACRO(_A1, _A2, MACRO) MACRO
 
 #define ERROR_PREFIX "error"
 
-#ifndef MINIMAL_ZIC
+#ifndef MINI_ZIC
+#define FULL_API
+#endif
+
+#ifdef FULL_API
+
+#include "defer.h"
 
 #define OK_CLEAN() \
     ZIC_res = OK; \
@@ -19,8 +25,7 @@
     ZIC_res = OK; \
     goto defer##LABEL;
 
-#define GET_OK_MACRO(_A1, _A2, OK_MACRO,...) OK_MACRO
-#define OK(...) GET_OK_MACRO(__VA_ARGS__, OK_LABEL, OK_FINAL)(__VA_ARGS__)
+#define OK(...) GET_LABEL_MACRO(__VA_ARGS__, OK_LABEL, OK_FINAL)(__VA_ARGS__)
 
 #define ERROR_CLEAN(ERR) \
     ZIC_res = ERR; \
@@ -34,8 +39,7 @@
     ZIC_res = ERR; \
     goto defer##LABEL;
 
-#define GET_ERROR_MACRO(_A1, _A2, ERROR_MACRO,...) ERROR_MACRO
-#define ERROR(...) GET_ERROR_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
+#define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
 
 #define FAIL_CLEAN() \
     ZIC_res = FAIL; \
@@ -49,25 +53,50 @@
     ZIC_res = FAIL; \
     goto defer##LABEL;
 
-#define GET_FAIL_MACRO(_A1, _A2, FAIL_MACRO,...) FAIL_MACRO
-#define FAIL(...) GET_FAIL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
+#define FAIL(...) GET_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
 #else
 #define OK() \
-    DO_DEFER();\
     return OK;
 
 #define ERROR(ERR) \
-    DO_ERRDEFER();\
-    DO_DEFER();\
     return ERR;
 
 #define FAIL() \
-    DO_ERRDEFER();\
-    DO_DEFER();\
     return FAIL; 
 
 #endif
+
+#define ZIC_BASE_CATCH(ERR, ...) \
+    fprintf(stderr, ERROR_PREFIX); \
+    fprintf(stderr, ERR, ##__VA_ARGS__); \
+    fprintf(stderr, "\n");
+
+#ifdef FULL_API
+
+#define CATCH_CLEAN(ERR, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_CLEAN();
+
+#define CATCH_FINAL(ERR, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_FINAL();
+
+#define CATCH_LABEL(ERR, LABEL, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_LABEL(LABEL);
+
+#define CATCH(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_LABEL, CATCH_FINAL)(__VA_ARGS__)
+
+#define CATCH_SYS_CLEAN() perror(ERROR_PREFIX); FAIL();
+
+#define CATCH_SYS_FINAL() perror(ERROR_PREFIX); FAIL_FINAL();
+
+#define CATCH_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_CLEAN(LABEL);
+
+#define CATCH_SYS(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_SYS_LABEL, CATCH_SYS_FINAL)(__VA_ARGS__)
+
+#else
 
 #define CATCH(ERR, ...) \
     fprintf(stderr, ERROR_PREFIX); \
@@ -76,6 +105,8 @@
     FAIL();
 
 #define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
+#endif
+
 
 #define UNWRAP_CLEAN(EXP) { \
     int res = (EXP); \
@@ -92,8 +123,7 @@
     if (res < 0) { ERROR(ERR_SYS, LABEL); } \
     else if (res) ERROR(res, LABEL); }
 
-#define GET_UNWRAP_MACRO(_A1, _A2, UNWRAP_MACRO,...) UNWRAP_MACRO
-#define UNWRAP(...) GET_UNWRAP_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
+#define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_NEG_CLEAN(EXP) { \
     int res = (EXP); \
@@ -107,13 +137,11 @@
     int res = (EXP); \
     if (res < 0) ERROR(ERR_SYS, LABEL); }
 
-#define GET_UNWRAP_NEG(_A1, _A2, UNWRAP_NEG_MACRO,...) UNWRAP_NEG_MACRO
-
 #define UNWRAP_NEG(...) GET_UNWRAP_NEG(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
 
-#define UNWRAP_SYS(EXP) UNWRAP(EXP)
+#define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
 
-#define UNWRAP_NSYS(EXP) UNWRAP_NEG(EXP)
+#define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
 
 #define UNWRAP_LOCAL(EXP) { \
     int res = (EXP); \
@@ -155,7 +183,6 @@
     const void *res = (EXP); \
     if (!res) ERROR(ERR_SYS, defer##LABEL) }
 
-#define GET_UNWRAP_PTR(_A1, _A2, UNWRAP_PTR_MACRO,...) UNWRAP_PTR_MACRO
 
 #define UNWRAP_PTR(...) GET_UNWRAP_PTR(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
 
@@ -173,11 +200,11 @@
     const void *res = (EXP); \
     if (!res) ERROR(ERR) }
 
-#ifndef MINIMAL_ZIC
+#ifndef MINI_ZIC
 
 #define PTR_UNWRAP_CLEAN(EXP) \
-    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; 
-    //{ if (!ZIC_unwrap_ptr_res) { puts("ewfwfe"); ERROR_CLEAN(ERR_SYS) } }
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) { ERROR_CLEAN(ERR_SYS) } }
 
 #define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
@@ -186,8 +213,6 @@
 #define PTR_UNWRAP_LABEL(EXP, LABEL) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS, LABEL) }
-
-#define GET_PTR_UNWRAP(_A1, _A2, PTR_UNWRAP_MACRO,...) PTR_UNWRAP_MACRO
 
 #define PTR_UNWRAP(...) GET_PTR_UNWRAP(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FINAL)(__VA_ARGS__)
 
@@ -217,42 +242,27 @@ typedef enum {
 
 typedef int result;
 
-#ifndef MINIMAL_ZIC
-#ifdef USE_NESTED_FUNCTIONS
+#ifdef FULL_API
 
 #define DEF { \
     result ZIC_res = OK; \
-    void *ZIC_unwrap_ptr_res = NULL; 
-#else
+    void *ZIC_unwrap_ptr_res = NULL;
 
-#define DEF { \
-    result ZIC_res = OK; \
-    void *ZIC_unwrap_ptr_res = NULL; \
-    INIT_DEFER()
-#endif
-
-#else
-#define DEF {
-#endif
-
-#ifndef MINIMAL_ZIC
 #define END goto deferfinal; \
-    errexit: \
-    DO_ERRDEFER(); \
-    exit: \
-    DO_DEFER(); \
+    errexit: ;\
+    exit: ;\
     return ZIC_res; \
 }
 
 #define END_CLEAN deferfinal: ; \
-    errexit: \
-    DO_ERRDEFER(); \
-    exit: \
-    DO_DEFER(); \
+    errexit: ;\
+    exit: ;\
     return ZIC_res; \
 }
 
 #else
+#define DEF {
+    
 #define END }
 #endif
 
@@ -273,28 +283,6 @@ typedef int result;
 
 #define ELSE(EXP) : (EXP) ;
 
-
-#define MATCH switch(
-
-#define CASE_NONE() 
-
-#define CASE(CASE_EXP) case CASE_EXP  
-/*
-#define GET_CASE(_A1, CASE_MACRO,...) CASE_MACRO
-
-#define CASE(...) GET_CASE(__VA_ARGS__, CASE1, CASE_NONE)(__VA_ARGS__)
-*/
-#define WITH4(CASEEXP1, CASEEXP2, CASEEXP3, CASEEXP4) ) { CASE(CASEEXP1); CASE(CASEEXP2); CASE(CASEEXP3); CASE(CASEXP4); }
-
-#define WITH3(CASEEXP1, CASEEXP2, CASEEXP3) ) { CASE(CASEEXP1); CASE(CASEEXP2); CASE(CASEXP3); }
-
-#define WITH2(CASEEXP1, CASEEXP2) ) { CASE(CASEEXP1); CASE(CASEEXP2); }
-
-#define WITH1(CASEEXP) ) { CASE(CASEEXP) }
-/*_A5, _A6, _A7, _A8, _A9, _A10, _A11, _A12, _A13, _A14, _A15, _A16,*/
-#define GET_WITH(_A1, _A2, _A3, _A4,  WITH_MACRO,...) WITH_MACRO
-
-#define WITH(...) GET_WITH(__VA_ARGS__, WITH4, WITH3, WITH2, WITH1)(__VA_ARGS__)
-
+#include "matchwith.h"
 
 #endif
