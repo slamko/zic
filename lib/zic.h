@@ -127,26 +127,7 @@
 
 #define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
-#ifdef FULL_API
-#define UNWRAP_NEG_CLEAN(EXP) { \
-    int res = (EXP); \
-    if (res < 0) ERROR_CLEAN(ERR_SYS); }
-
-#endif
-
-#define UNWRAP_NEG_FINAL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) ERROR(ERR_SYS); }
-
-#define UNWRAP_NEG_LABEL(EXP, LABEL) { \
-    int res = (EXP); \
-    if (res < 0) ERROR(ERR_SYS, LABEL); }
-
-#define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
-
-#define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
 
 #ifdef FULL_API
 #define UNWRAP_LOCAL_CLEAN(EXP) { \
@@ -168,42 +149,58 @@
 
 #define UNWRAP_LOCAL(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LOCAL_LABEL, UNWRAP_LOCAL_FINAL)(__VA_ARGS__)
 
-#ifdef FULL_API
-#define UNWRAP_NLOCAL_CLEAN(EXP) { \
-    int res = (EXP); \
-    if (res < 0) ERROR_CLEAN(ERR_LOCAL) \
-
-#endif
-
-#define UNWRAP_NLOCAL_FINAL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) ERROR_FINAL(ERR_LOCAL) \
-}
-
-#define UNWRAP_NLOCAL_LABEL(EXP, LABEL) { \
-    int res = (EXP); \
-    if (res < 0) ERROR_LABEL(ERR_LOCAL, LABEL) \
-}
-
-#define UNWRAP_NLOCAL(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NLOCAL_LABEL, UNWRAP_NLOCAL_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_USER(EXP) { \
     int res = (EXP); \
     if (res < 0) ERROR(ERR_USER) \
     else if (res) ERROR(res) }
-
-#define UNWRAP_NUSER(EXP) { \
-    int res = (EXP); \
-    if (res < 0) ERROR(ERR_USER)
 
 #define UNWRAP_ERR(EXP, ERR) { \
     const int res = (EXP); \
     if (res < 0) ERROR(ERR) \
     else if (res) ERROR(res) }
 
-#define UNWRAP_NERR(EXP, ERR) { \
+#ifdef FULL_API
+#define UNWRAP_NEG_CLEAN(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR_SYS); }
+
+#endif
+
+#define UNWRAP_NEG_FINAL(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR(ERR_SYS); }
+
+#define UNWRAP_NEG_LABEL(EXP, LABEL) { \
+    int res = (EXP); \
+    if (res < 0) ERROR(ERR_SYS, LABEL); }
+
+#define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
+
+#ifdef FULL_API
+#define UNWRAP_NERR_CLEAN(EXP, ERR) { \
     const int res = (EXP); \
-    if (res < 0) ERROR(ERR) 
+    if (res < 0) ERROR_CLEAN(ERR) 
+
+#define UNWRAP_NLOCAL_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_LOCAL) 
+
+#define UNWRAP_NUSER_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_USER) 
+#endif
+
+#define UNWRAP_NERR_FINAL(EXP, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) ERROR_FINAL(ERR) 
+
+#define UNWRAP_NERR_LABEL(EXP, LABEL, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) ERROR_LABEL(ERR, LABEL) 
+
+#define UNWRAP_NERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NERR_LABEL, UNWRAP_NERR_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_NLOCAL(...) UNWRAP_NERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_NUSER(...) UNWRAP_NERR(__VA_ARGS__, ERR_USER)
 
 #ifdef FULL_API
 #define UNWRAP_PTR_CLEAN(EXP) { \
@@ -220,31 +217,38 @@
     const void *res = (EXP); \
     if (!res) ERROR(ERR_SYS, defer##LABEL) }
 
+#define UNWRAP_PTR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
 
-#define UNWRAP_PTR(...) GET_UNWRAP_PTR(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
+#define UNWRAP_PTR_SYS(EXP, ...) UNWRAP_PTR(EXP, __VA_ARGS__)
 
-#define UNWRAP_PTR_SYS(EXP) UNWRAP_PTR(EXP)
-
-#define UNWRAP_PTR_LOCAL(EXP) { \
+#ifdef FULL_API
+#define UNWRAP_PTR_ERR_CLEAN(EXP, ERR) { \
     const void *res = (EXP); \
-    if (!res) ERROR(ERR_LOCAL) }
+    if (!res) ERROR_CLEAN(ERR) }
 
-#define UNWRAP_PTR_USER(EXP) { \
+#define UNWRAP_PTR_LOCAL_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_LOCAL)
+
+#define UNWRAP_PTR_USER_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_USER)
+#endif
+
+#define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
     const void *res = (EXP); \
-    if (!res) ERROR(ERR_USER) }
+    if (!res) ERROR_FINAL(ERR) }
 
-#define UNWRAP_PTR_ERR(EXP, ERR) { \
+#define UNWRAP_PTR_ERR_LABEL(EXP, LABEL, ERR) { \
     const void *res = (EXP); \
-    if (!res) ERROR(ERR) }
+    if (!res) ERROR_LABEL(ERR, LABEL) }
 
-#ifndef MINI_ZIC
+#define UNWRAP_PTR_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_ERR_LABEL, UNWRAP_PTR_ERR_FINAL)
+
+#define UNWRAP_PTR_LOCAL(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_PTR_USER(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_USER)
 
 #ifdef FULL_API
 #define PTR_UNWRAP_CLEAN(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
     { if (!ZIC_unwrap_ptr_res) { ERROR_CLEAN(ERR_SYS) } }
-
-#endif
 
 #define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
@@ -256,19 +260,29 @@
 
 #define PTR_UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FINAL)(__VA_ARGS__)
 
-#define PTR_UNWRAP_SYS(EXP) PTR_UNWRAP(EXP)
+#define PTR_UNWRAP_SYS(EXP, ...) PTR_UNWRAP(EXP, __VA_ARGS__)
 
-#define PTR_UNWRAP_LOCAL(EXP) { \
+#define PTR_UNWRAP_ERR_CLEAN(EXP, ERR) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_LOCAL) }
+    { if (!ZIC_unwrap_ptr_res) ERROR_CLEAN(ERR) }
 
-#define PTR_UNWRAP_USER(EXP) { \
-    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_USER) }
+#define PTR_UNWRAP_LOCAL_CLEAN(EXP) PTR_UNWRAP_ERR_CLEAN(EXP, ERR_LOCAL)
 
-#define PTR_UNWRAP_ERR(EXP, ERR) { \
+#define PTR_UNWRAP_USER_CLEAN(EXP) PTR_UNWRAP_ERR_CLEAN(EXP, ERR_USER)
+
+#define PTR_UNWRAP_ERR_FINAL(EXP, ERR) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR(ERR) }
+    { if (!ZIC_unwrap_ptr_res) ERROR_FINAL(ERR) }
+
+#define PTR_UNWRAP_ERR_LABEL(EXP, LABEL, ERR) { \
+    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
+    { if (!ZIC_unwrap_ptr_res) ERROR_LABEL(ERR, LABEL) }
+
+#define PTR_UNWRAP_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, PTR_UNWRAP_ERR_LABEL, PTR_UNWRAP_ERR_FINAL)(__VA_ARGS__)
+
+#define PTR_UNWRAP_LOCAL(...) PTR_UNWRAP_ERR(__VA_ARGS__, ERR_LOCAL)
+
+#define PTR_UNWRAP_USER(...) PTR_UNWRAP_ERR(__VA_ARGS_, ERR_USER)
 
 #endif
 
