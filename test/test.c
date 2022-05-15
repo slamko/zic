@@ -5,6 +5,8 @@
 #include <dirent.h>
 #include "zic.h"
 
+DEFINE_ERROR(ERR_INVARG, 10)
+
 result
 defer_close_file(int argc, char **argv) DEF
     char file[] = "file1";

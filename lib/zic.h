@@ -12,7 +12,7 @@
 #include "defer.h"
 
 #endif
-#include "basesyntax.h"
+#include "base_errors.h"
 
 #include "catcherror.h"
 

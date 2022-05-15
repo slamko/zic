@@ -65,6 +65,36 @@ typedef enum {
 
 typedef int result;
 
+#if __STDC_VERSION__ == 201112L
+
+#define DEFINE_ERROR(ERR_NAME, NUM) \
+    enum {                          \
+        ERR_NAME = NUM              \
+    };
+
+#else
+
+#if defined _MSC_VER
+#define GEN_ENUM_NAME_LINE(COUNTER, NUM) zic_error_##COUNTER##_##NUM
+
+#define GEN_ENUM_NAME(COUNTER, NUM) GEN_ENUM_NAME_LINE(LINE, NFILE, NUM)
+
+#define ENUM_NAME(NUM) GEN_ENUM_NAME(__COUNTER__, NUM)
+#else
+#define GEN_ENUM_NAME_LINE(LINE, NFILE, NUM) zic_error_##LINE##_##NUM
+
+#define GEN_ENUM_NAME(LINE, NFILE, NUM) GEN_ENUM_NAME_LINE(LINE, NFILE, NUM)
+
+#define ENUM_NAME(NUM) GEN_ENUM_NAME(__LINE__, __FILE__, NUM)
+#endif
+
+#define DEFINE_ERROR(ERR_NAME, NUM) \
+    enum ENUM_NAME(NUM) { \
+        ERR_NAME = NUM \
+    };
+
+#endif
+
 #ifdef FULL_API
 
 #define DEF { \
