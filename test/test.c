@@ -13,6 +13,7 @@ defer_close_file(int argc, char **argv) DEF
 
     fp = PTR_UNWRAP_CLEAN (fopen(file, "r"))
     DEFER1_FINAL(fclose(fp))
+
     printf("%p\n", fp);
 
     ch = fgetc(fp);
@@ -40,13 +41,14 @@ defer_free_t(int argc, char **argv) DEF
     }
     
     strcpy(str, argv[1]);
-    UNWRAP (puts(str));
+    UNWRAP (puts(str))
 END
 
 int
 main(int argc, char **argv) DEF
     result res = defer_free_t(argc, argv); 
     MATCH res WITH (
+        OK: return 24,
         ERR_SYS: return OK,
         ERR_USER: return 67
     )

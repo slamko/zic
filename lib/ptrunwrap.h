@@ -4,15 +4,17 @@
 
 #define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS) }
+    { if (!ZIC_unwrap_ptr_res) { ERROR(ERR_SYS) } }
 
 #define PTR_UNWRAP_LABEL(EXP, LABEL) \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR(ERR_SYS, LABEL) }
+    { if (!ZIC_unwrap_ptr_res) { ERROR(ERR_SYS, LABEL) } }
 
 #define PTR_UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, PTR_UNWRAP_LABEL, PTR_UNWRAP_FINAL)(__VA_ARGS__)
 
 #define PTR_UNWRAP_SYS(EXP, ...) PTR_UNWRAP(EXP, __VA_ARGS__)
+
+#define PTR_UNWRAP_SYS_CLEAN(EXP) PTR_UNWRAP_CLEAN(EXP)
 
 #define PTR_UNWRAP_ERR_CLEAN(EXP, ERR) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
@@ -24,11 +26,11 @@
 
 #define PTR_UNWRAP_ERR_FINAL(EXP, ERR) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR_FINAL(ERR) }
+    { if (!ZIC_unwrap_ptr_res) { ERROR_FINAL(ERR) } }
 
 #define PTR_UNWRAP_ERR_LABEL(EXP, LABEL, ERR) { \
     (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res : NULL; \
-    { if (!ZIC_unwrap_ptr_res) ERROR_LABEL(ERR, LABEL) }
+    { if (!ZIC_unwrap_ptr_res) { ERROR_LABEL(ERR, LABEL) } }
 
 #define PTR_UNWRAP_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, PTR_UNWRAP_ERR_LABEL, PTR_UNWRAP_ERR_FINAL)(__VA_ARGS__)
 

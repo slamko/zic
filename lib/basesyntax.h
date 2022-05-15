@@ -1,18 +1,18 @@
 #ifdef FULL_API
 
-#define OK_CLEAN() \
+#define R_OK_CLEAN() \
     ZIC_res = OK; \
     goto exit;
 
-#define OK_FINAL() \
+#define R_OK_FINAL() \
     ZIC_res = OK; \
     goto deferfinal;
 
-#define OK_LABEL(LABEL) \
+#define R_OK_LABEL(LABEL) \
     ZIC_res = OK; \
     goto defer##LABEL;
 
-#define OK(...) GET_LABEL_MACRO(__VA_ARGS__, OK_LABEL, OK_FINAL)(__VA_ARGS__)
+#define RET_OK(...) GET_LABEL_MACRO(__VA_ARGS__, OK_LABEL, OK_FINAL)(__VA_ARGS__)
 
 #define ERROR_CLEAN(ERR) \
     ZIC_res = ERR; \
@@ -43,7 +43,7 @@
 #define FAIL(...) GET_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
 #else
-#define OK() \
+#define RET_OK() \
     return OK;
 
 #define ERROR(ERR) \
