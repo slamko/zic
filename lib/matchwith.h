@@ -1,4 +1,7 @@
 
+#ifdef ZIC_MATCH_WITH
+#define ZIC_MATCH_WITH
+
 #define MATCH switch(
 
 #define CASE_NONE() 
@@ -152,3 +155,4 @@
     WITH15, WITH14, WITH13, WITH12, WITH11, WITH10, WITH9, WITH8, \
     WITH7, WITH6, WITH5, WITH4, WITH3, WITH2, WITH1)(__VA_ARGS__)
 
+#endif

@@ -15,6 +15,5 @@ test: $(TARGET)
 	./$(TARGET) &
 	echo " "
 
-
 clean:
 	$(RM) $(TARGET) *.o

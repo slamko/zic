@@ -1,4 +1,7 @@
 
+#ifdef ZIC_DEFER
+#define ZIC_DEFER
+
 #define DEFER1(LABEL, ST)  goto next##LABEL; defer##LABEL: defer1: ST; goto defer2; next##LABEL:;
 #define DEFER2(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer2:  ST; goto defer3; next##LABEL:;
 #define DEFER3(LABEL, ST)  goto next##LABEL; defer##LABEL: goto defer1; defer3:  ST; goto defer4; next##LABEL:;
@@ -67,10 +70,6 @@
 
 #define CLEANUP(LABEL, CLEAN) LABEL: CLEAN;
 
-#define DO_DEFER()
-
-#define DO_ERRDEFER()
-
-#define INIT_DEFER()
-
 #define NO_CLEANUP() deferfinal: ;
+
+#endif

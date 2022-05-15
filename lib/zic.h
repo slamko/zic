@@ -1,7 +1,11 @@
-#ifndef ZIC_ERROR_HANDLING
-#define ZIC_ERROR_HANDLING
+#ifndef ZIC_ZIC
+#define ZIC_ZIC
 
-#include "macroutils.h"
+#define GET_LABEL_MACRO(_A1, _A2, MACRO, ...) MACRO
+
+#define ERROR_PREFIX "error"
+
+#define ZIC_RES_VAR_NAME_VAR_NAME ZIC_res
 
 #ifndef MINI_ZIC
 #define FULL_API
@@ -9,12 +13,176 @@
 
 #ifdef FULL_API
 
-#include "defer.h"
+#define R_OK_CLEAN() \
+    ZIC_RES_VAR_NAME = OK; \
+    goto exit;
+
+#define R_OK_FINAL() \
+    ZIC_RES_VAR_NAME = OK; \
+    goto deferfinal;
+
+#define R_OK_LABEL(LABEL) \
+    ZIC_RES_VAR_NAME = OK; \
+    goto defer##LABEL;
+
+#define RET_OK(...) GET_LABEL_MACRO(__VA_ARGS__, OK_LABEL, OK_FINAL)(__VA_ARGS__)
+
+#define ERROR_CLEAN(ERR) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto exit;
+
+#define ERROR_FINAL(ERR) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto deferfinal;
+
+#define ERROR_LABEL(ERR, LABEL) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto defer##LABEL;
+
+#define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
+
+#define FAIL_CLEAN() \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto exit;
+
+#define FAIL_FINAL() \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto deferfinal;
+
+#define FAIL_LABEL(LABEL) \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto defer##LABEL;
+
+#define FAIL(...) GET_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
+
+#else
+#define RET_OK() \
+    return OK;
+
+#define ERROR(ERR) \
+    return ERR;
+
+#define FAIL() \
+    return FAIL; 
 
 #endif
-#include "base_errors.h"
 
-#include "catcherror.h"
+
+typedef enum {
+    OK = 0,
+    FAIL = 1,
+    ERR_LOCAL = 2,
+    ERR_SYS = 3,
+    ERR_USER = 4
+} base_result;
+
+typedef int result;
+
+#if __STDC_VERSION__ == 201112L
+
+#define DEFINE_ERROR(ERR_NAME, NUM) \
+    enum {                          \
+        ERR_NAME = NUM              \
+    };
+
+#else
+
+#if defined _MSC_VER
+#define GEN_ENUM_NAME_LINE(COUNTER, NUM) zic_error_##COUNTER##_##NUM
+
+#define GEN_ENUM_NAME(COUNTER, NUM) GEN_ENUM_NAME_LINE(LINE, NFILE, NUM)
+
+#define ENUM_NAME(NUM) GEN_ENUM_NAME(__COUNTER__, NUM)
+#else
+#define GEN_ENUM_NAME_LINE(LINE, NFILE, NUM) zic_error_##LINE##_##NUM
+
+#define GEN_ENUM_NAME(LINE, NFILE, NUM) GEN_ENUM_NAME_LINE(LINE, NFILE, NUM)
+
+#define ENUM_NAME(NUM) GEN_ENUM_NAME(__LINE__, __FILE__, NUM)
+#endif
+
+#define DEFINE_ERROR(ERR_NAME, NUM) \
+    enum ENUM_NAME(NUM) { \
+        ERR_NAME = NUM \
+    };
+
+#endif
+
+#ifdef FULL_API
+
+#define DEF { \
+    result ZIC_RES_VAR_NAME = OK; \
+    void *ZIC_unwrap_ptr_res = NULL;
+
+#define END goto deferfinal;  \
+    errexit:                  \
+    exit: ;                   \
+    return ZIC_RES_VAR_NAME;  \
+}
+
+#define END_CLEAN deferfinal: \
+    errexit:                  \
+    exit: ;                   \
+    return ZIC_RES_VAR_NAME;  \
+}
+
+#else
+#define DEF {
+    
+#define END }
+#endif
+
+#define IS_HANDLED(ERR) (ERR == FAIL || ERR == OK)
+
+#define IS_UNHANDLED(ERR) (ERR != FAIL && ERR != OK)
+
+#define IS_OK(EXP) (EXP == OK)
+
+#define IS_ERROR(EXP) (EXP != OK)
+
+#define ISNULL(PTR) !PTR
+
+#define IS_NOTNULL(PTR) PTR
+
+#define ZIC_BASE_CATCH(ERR, ...) \
+    fprintf(stderr, ERROR_PREFIX); \
+    fprintf(stderr, ERR, ##__VA_ARGS__); \
+    fprintf(stderr, "\n");
+
+#ifdef FULL_API
+
+#define CATCH_CLEAN(ERR, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_CLEAN();
+
+#define CATCH_FINAL(ERR, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL();
+
+#define CATCH_LABEL(ERR, LABEL, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_LABEL(LABEL);
+
+#define CATCH(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_LABEL, CATCH_FINAL)(__VA_ARGS__)
+
+#define CATCH_SYS_CLEAN() perror(ERROR_PREFIX); FAIL();
+
+#define CATCH_SYS_FINAL() perror(ERROR_PREFIX); FAIL();
+
+#define CATCH_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_CLEAN(LABEL);
+
+#define CATCH_SYS(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_SYS_LABEL, CATCH_SYS_FINAL)(__VA_ARGS__)
+
+#else
+
+#define CATCH(ERR, ...) \
+    fprintf(stderr, ERROR_PREFIX); \
+    fprintf(stderr, ERR, ##__VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    FAIL();
+
+#define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
+#endif
 
 #ifdef FULL_API
 #define UNWRAP_CLEAN(EXP) { \
@@ -51,8 +219,8 @@
 
 #define UNWRAP_ERR_FINAL(EXP, ERR) { \
     int res = (EXP); \
-    if (res < 0) { ERROR_FINAL(ERR); } \
-    else if (res) { ERROR_FINAL(res); } }
+    if (res < 0) { ERROR(ERR); } \
+    else if (res) { ERROR(res); } }
 
 #define UNWRAP_ERR_LABEL(EXP, LABEL, ERR) { \
     int res = (EXP); \
@@ -98,7 +266,7 @@
 
 #define UNWRAP_NERR_FINAL(EXP, ERR) { \
     const int res = (EXP); \
-    if (res < 0) { ERROR_FINAL(ERR) } 
+    if (res < 0) { ERROR(ERR) } 
 
 #define UNWRAP_NERR_LABEL(EXP, LABEL, ERR) { \
     const int res = (EXP); \
@@ -143,7 +311,7 @@
 
 #define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
     const void *res = (EXP); \
-    if (!res) { ERROR_FINAL(ERR) } }
+    if (!res) { ERROR(ERR) } }
 
 #define UNWRAP_PTR_ERR_LABEL(EXP, LABEL, ERR) { \
     const void *res = (EXP); \
@@ -156,14 +324,13 @@
 #define UNWRAP_PTR_USER(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_USER)
 
 #ifdef FULL_API
+
 #include "ptrunwrap.h"
-#endif
-
-#define OR(EXP) \
-    (ZIC_unwrap_ptr_res = (EXP)) ? ZIC_unwrap_ptr_res
-
-#define ELSE(EXP) : (EXP) ;
 
 #include "matchwith.h"
+
+#include "defer.h"
+
+#endif
 
 #endif
