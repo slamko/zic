@@ -184,7 +184,51 @@ typedef int result;
 #define CATCH_SYS() perror(ERROR_PREFIX); FAIL();
 #endif
 
+
+// UNWRAP
+
+
+#define UNWRAP_FINAL(EXP) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR(ERR_SYS); } \
+    else if (res) { ERROR(res); } }
+
+#define UNWRAP_ERR_FINAL(EXP, ERR) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR(ERR); } \
+    else if (res) { ERROR(res); } }
+
+
+#define UNWRAP_NEG_FINAL(EXP) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR(ERR_SYS); } }
+
+
+#define UNWRAP_NERR_FINAL(EXP, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) { ERROR(ERR) } 
+
+#define UNWRAP_PTR_FINAL(EXP) { \
+    const void *res = (EXP); \
+    if (!res) { ERROR(ERR_SYS) } }
+
+#define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
+    const void *res = (EXP); \
+    if (!res) { ERROR(ERR) } }
+
 #ifdef FULL_API
+
+#include "ptrunwrap.h"
+
+#include "matchwith.h"
+
+#include "defer.h"
+
+#endif
+
+
+#ifdef FULL_API
+
 #define UNWRAP_CLEAN(EXP) { \
     int res = (EXP); \
     if (res < 0) { ERROR_CLEAN(ERR_SYS); } \
@@ -201,13 +245,6 @@ typedef int result;
 
 #define UNWRAP_USER_CLEAN(EXP) UNWRAP_ERR_CLEAN(EXP, ERR_USER)
 
-#endif
-
-#define UNWRAP_FINAL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR(ERR_SYS); } \
-    else if (res) { ERROR(res); } }
-
 #define UNWRAP_LABEL(EXP, LABEL) { \
     int res = (EXP); \
     if (res < 0) { ERROR(ERR_SYS, LABEL); } \
@@ -216,11 +253,6 @@ typedef int result;
 #define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
-
-#define UNWRAP_ERR_FINAL(EXP, ERR) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR(ERR); } \
-    else if (res) { ERROR(res); } }
 
 #define UNWRAP_ERR_LABEL(EXP, LABEL, ERR) { \
     int res = (EXP); \
@@ -232,6 +264,7 @@ typedef int result;
 #define UNWRAP_LOCAL(...) UNWRAP_ERR(__VA_ARGS__, ERR_LOCAL)
 
 #define UNWRAP_USER(...) UNWRAP_ERR(__VA_ARGS__, ERR_USER)
+
 
 #ifdef FULL_API
 #define UNWRAP_NEG_CLEAN(EXP) { \
@@ -264,10 +297,6 @@ typedef int result;
 #define UNWRAP_NUSER_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_USER) 
 #endif
 
-#define UNWRAP_NERR_FINAL(EXP, ERR) { \
-    const int res = (EXP); \
-    if (res < 0) { ERROR(ERR) } 
-
 #define UNWRAP_NERR_LABEL(EXP, LABEL, ERR) { \
     const int res = (EXP); \
     if (res < 0) { ERROR_LABEL(ERR, LABEL) } 
@@ -277,6 +306,7 @@ typedef int result;
 #define UNWRAP_NLOCAL(...) UNWRAP_NERR(__VA_ARGS__, ERR_LOCAL)
 
 #define UNWRAP_NUSER(...) UNWRAP_NERR(__VA_ARGS__, ERR_USER)
+
 
 #ifdef FULL_API
 #define UNWRAP_PTR_CLEAN(EXP) { \
@@ -309,9 +339,7 @@ typedef int result;
 #define UNWRAP_PTR_USER_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_USER)
 #endif
 
-#define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
-    const void *res = (EXP); \
-    if (!res) { ERROR(ERR) } }
+
 
 #define UNWRAP_PTR_ERR_LABEL(EXP, LABEL, ERR) { \
     const void *res = (EXP); \
@@ -323,13 +351,6 @@ typedef int result;
 
 #define UNWRAP_PTR_USER(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_USER)
 
-#ifdef FULL_API
-
-#include "ptrunwrap.h"
-
-#include "matchwith.h"
-
-#include "defer.h"
 
 #endif
 

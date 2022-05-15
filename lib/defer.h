@@ -72,4 +72,4 @@
 
 #define NO_CLEANUP() deferfinal: ;
 
-#endif
+#endif // ZIC_DEFER

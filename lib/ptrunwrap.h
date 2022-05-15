@@ -49,4 +49,4 @@
 
 #define ELSE(EXP) : (EXP) ;
 
-#endif
+#endif // ZIC_PTR_UNWRAP
