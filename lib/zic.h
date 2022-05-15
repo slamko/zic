@@ -22,6 +22,17 @@
     if (res < 0) { ERROR_CLEAN(ERR_SYS); } \
     else if (res) { ERROR_CLEAN(res); } }
 
+#define UNWRAP_ERR_CLEAN(EXP, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR) \
+    else if (res) ERROR_CLEAN(res) }
+
+#define UNWRAP_SYS_CLEAN(...) UNWRAP_CLEAN(__VA_ARGS__)
+
+#define UNWRAP_LOCAL_CLEAN(...) UNWRAP_ERR_CLEAN(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_USER_CLEAN(...) UNWRAP_ERR_CLEAN(__VA_ARGS__, ERR_USER)
+
 #endif
 
 #define UNWRAP_FINAL(EXP) { \
@@ -38,35 +49,21 @@
 
 #define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
 
-#ifdef FULL_API
-#define UNWRAP_LOCAL_CLEAN(EXP) { \
+#define UNWRAP_ERR_FINAL(EXP, ERR) { \
     int res = (EXP); \
-    if (res < 0) ERROR_CLEAN(ERR_LOCAL) \
-    else if (res) ERROR_CLEAN(res) }
+    if (res < 0) { ERROR_FINAL(ERR); } \
+    else if (res) { ERROR_FINAL(res); } }
 
-#endif
-
-#define UNWRAP_LOCAL_FINAL(EXP) { \
+#define UNWRAP_ERR_LABEL(EXP, LABEL, ERR) { \
     int res = (EXP); \
-    if (res < 0) ERROR_FINAL(ERR_LOCAL) \
-    else if (res) ERROR_FINAL(res) }
+    if (res < 0) { ERROR_LABEL(ERR, LABEL); } \
+    else if (res) { ERROR_LABEL(ERR, LABEL); } }
 
-#define UNWRAP_LOCAL_LABEL(EXP, LABEL) { \
-    int res = (EXP); \
-    if (res < 0) ERROR_LABEL(ERR_LOCAL, LABEL) \
-    else if (res) ERROR_LABEL(res, LABEL) }
+#define UNWRAP_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_ERR_LABEL, UNWRAP_ERR_FINAL)(__VA_ARGS__)
 
-#define UNWRAP_LOCAL(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LOCAL_LABEL, UNWRAP_LOCAL_FINAL)(__VA_ARGS__)
+#define UNWRAP_LOCAL(...) UNWRAP_ERR(__VA_ARGS__, ERR_LOCAL)
 
-#define UNWRAP_USER(EXP) { \
-    int res = (EXP); \
-    if (res < 0) ERROR(ERR_USER) \
-    else if (res) ERROR(res) }
-
-#define UNWRAP_ERR(EXP, ERR) { \
-    const int res = (EXP); \
-    if (res < 0) ERROR(ERR) \
-    else if (res) ERROR(res) }
+#define UNWRAP_USER(...) UNWRAP_ERR(__VA_ARGS__, ERR_USER)
 
 #ifdef FULL_API
 #define UNWRAP_NEG_CLEAN(EXP) { \
