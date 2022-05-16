@@ -127,32 +127,40 @@ typedef int result;
 
 #define IS_NOTNULL(PTR) (PTR)
 
+#define IS_ERR(ERR) == ERR
 
-// CATCH
 
-#define CATCH_CLEAN(ERR, ...) \
-    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+// HANDLE
+
+#define HANDLE_CLEAN(ERR, ...) \
+    ZIC_BASE_HANDLE(ERR, __VA_ARGS__) \
     FAIL_CLEANUP();
 
-#define CATCH(...) \
-    fprintf(stderr, ERROR_PREFIX); \
+#define HANDLE(...) \
+    fprintf(stderr, ERROR_PREFIX ": "); \
     fprintf(stderr, ##__VA_ARGS__); \
     fprintf(stderr, "\n"); \
     FAIL()
 
-#define CATCH_LABEL(LABEL, ...) \
-    fprintf(stderr, ERROR_PREFIX); \
+#define HANDLE_ERR(ERR) \
+    fprintf(stderr, ERROR_PREFIX ": "); \
+    fprintf(stderr, ERR_TO_STR(ERR)); \
+    fprintf(stderr, "\n"); \
+    FAIL()
+
+#define HANDLE_LABEL(LABEL, ...) \
+    fprintf(stderr, ERROR_PREFIX ": "); \
     fprintf(stderr, ##__VA_ARGS__); \
     fprintf(stderr, "\n"); \
     FAIL_LABEL(LABEL);
 
-#define CATCH_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
+#define HANDLE_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
 
-#define CATCH_SYS_FINAL() perror(ERROR_PREFIX); FAIL();
+#define HANDLE_SYS_FINAL() perror(ERROR_PREFIX); FAIL();
 
-#define CATCH_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_LABEL(LABEL);
+#define HANDLE_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_LABEL(LABEL);
 
-#define CATCH_SYS(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_SYS_LABEL, CATCH_SYS_FINAL)(__VA_ARGS__)
+#define HANDLE_SYS(...) GET_LABEL_MACRO(__VA_ARGS__, HANDLE_SYS_LABEL, HANDLE_SYS_FINAL)(__VA_ARGS__)
 
 
 // UNWRAP

@@ -69,14 +69,10 @@ defer_free_t(int argc, char **argv) {
 
 int
 main(int argc, char **argv) {
-    result res = defer_free_t(argc, argv); 
+    result res = defer_free_t(argc, argv);
 
-    switch (res)
-    {
-    case ERR_TO_LONG_STR:
-        CATCH(ERR_TO_STR(ERR_TO_LONG_STR))
-        break;
-    }
+    if (res IS_ERR(ERR_TO_LONG_STR))
+        HANDLE_ERR(ERR_TO_LONG_STR)    
 
     return res;
 }

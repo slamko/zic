@@ -216,13 +216,13 @@
 
 
 
-// CATCH_CLEAN
+// HANDLE_CLEAN
 
-#define CATCH_CLEAN(ERR, ...) \
-    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+#define HANDLE_CLEAN(ERR, ...) \
+    ZIC_BASE_HANDLE(ERR, __VA_ARGS__) \
     FAIL_CLEAN();
 
-#define CATCH_SYS_CLEAN() perror(ERROR_PREFIX); FAIL_CLEAN();
+#define HANDLE_SYS_CLEAN() perror(ERROR_PREFIX); FAIL_CLEAN();
 
 
 
