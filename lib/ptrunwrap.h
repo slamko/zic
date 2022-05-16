@@ -4,6 +4,8 @@
 
 #define ZIC_PTR_UNWRAP_VAR_NAME ZIC_unwrap_ptr_res
 
+#define ZIC_PTR_UNWRAP_INIT() void *ZIC_unwrap_ptr_res = NULL;
+
 #define PTR_UNWRAP_FINAL(EXP) \
     (ZIC_PTR_UNWRAP_VAR_NAME = (EXP)) ? ZIC_PTR_UNWRAP_VAR_NAME : NULL; \
     { if (!ZIC_PTR_UNWRAP_VAR_NAME) { ERROR(ERR_SYS) } }
@@ -34,5 +36,20 @@
     (ZIC_PTR_UNWRAP_VAR_NAME = (EXP)) ? ZIC_PTR_UNWRAP_VAR_NAME
 
 #define ELSE(EXP) : (EXP) ;
+
+#ifndef ZIC_DEFER
+
+#undef DEF
+#undef END
+#undef END_CLEAN
+
+#define DEF { \
+    ZIC_PTR_UNWRAP_INIT()
+
+#define END RETURN_ZIC_RESULT() }
+
+#define END_CLEAN END
+
+#endif
 
 #endif // ZIC_PTR_UNWRAP

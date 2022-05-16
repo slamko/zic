@@ -7,7 +7,7 @@
 
 #define ERROR_PREFIX "error"
 
-#define ZIC_RES_VAR_NAME_VAR_NAME ZIC_res
+#define ZIC_RES_VAR_NAME ZIC_res
 
 #ifndef MINI_ZIC
 #define FULL_API
@@ -17,7 +17,7 @@
     return OK;
 
 #define RET_OK_LABEL(LABEL) \
-    ZIC_RES_VAR_NAME_VAR_NAME = OK; \
+    ZIC_RES_VAR_NAME = OK; \
     goto LABEL;
 
 #define RET_OK(...) GET_SINGLE_LABEL_MACRO(__VA_ARGS__, RET_OK_LABEL, RET_OK_FINAL)(__VA_ARGS__)
@@ -26,7 +26,7 @@
     return ERR;
 
 #define ERROR_LABEL(ERR, LABEL) \
-    ZIC_RES_VAR_NAME_VAR_NAME = ERR; \
+    ZIC_RES_VAR_NAME = ERR; \
     goto LABEL;
 
 #define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
@@ -35,12 +35,14 @@
     return FAIL;
 
 #define FAIL_LABEL(LABEL) \
-    ZIC_RES_VAR_NAME_VAR_NAME = FAIL; \
+    ZIC_RES_VAR_NAME = FAIL; \
     goto LABEL;
 
 #define FAIL(...) GET_SINGLE_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
-#define RETURN_ZIC_RESULT() return ZIC_RES_VAR_NAME_VAR_NAME;
+#define RETURN_ZIC_RESULT() return ZIC_RES_VAR_NAME;
+
+#define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME;
 
 #define CLEANUP(CLEAN) CLEAN; RETURN_ZIC_RESULT()
 
@@ -82,14 +84,6 @@ typedef int result;
         ERR_NAME = NUM \
     };
 
-#endif
-
-#ifdef FULL_API
-
-#else
-#define DEF {
-    
-#define END_CLEAN }
 #endif
 
 #define IS_HANDLED(ERR) (ERR == FAIL || ERR == OK)
@@ -231,6 +225,37 @@ typedef int result;
 
 #include "defer.h"
 
+
+#undef DEF
+#undef END
+#undef END_CLEAN
+
+#define DEF { \
+    ZIC_RESULT_INIT() \
+    ZIC_PTR_UNWRAP_INIT()
+
+#define END goto deferfinal;  \
+    errexit:                  \
+    exit: ;                   \
+    RETURN_ZIC_RESULT()       \
+}
+
+#define END_CLEAN deferfinal: \
+    errexit:                  \
+    exit: ;                   \
+    RETURN_ZIC_RESULT()       \
+}
+
+
+
+#else // FULL_API
+
+#if !defined DEF && !defined END_CLEAN
+#define DEF {
+    
+#define END_CLEAN }
 #endif
+
+#endif // FULL_API
 
 #endif // ZIC_ZIC

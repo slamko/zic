@@ -70,82 +70,101 @@
 
 #define NO_CLEANUP() deferfinal: ;
 
-// DEF END
+// DEF END END_CLEAN
+
+#undef DEF
+#undef END
+#undef END_CLEAN
 
 #define DEF { \
-    result ZIC_RES_VAR_NAME = OK; \
-    void *ZIC_unwrap_ptr_res = NULL;
+    ZIC_RESULT_INIT()
 
 #define END goto deferfinal;  \
     errexit:                  \
     exit: ;                   \
-    return ZIC_RES_VAR_NAME;  \
+    RETURN_ZIC_RESULT()       \
 }
 
 #define END_CLEAN deferfinal: \
     errexit:                  \
     exit: ;                   \
-    return ZIC_RES_VAR_NAME;  \
+    RETURN_ZIC_RESULT()       \
 }
 
 
-// ERROR OK FAIL
+// (ERROR OK FAIL)_CLEAN
 
 
-#define R_OK_CLEAN() \
-    ZIC_RES_VAR_NAME = OK; \
+#undef R_OK_CLEAN
+#undef R_OK_FINAL
+#undef R_OK_LABEL
+#undef RET_OK
+
+#undef ERROR_CLEAN
+#undef ERROR_FINAL
+#undef ERROR_LABEL
+#undef ERROR
+
+#undef FAIL_CLEAN
+#undef FAIL_FINAL
+#undef FAIL_LABEL
+#undef FAIL
+
+
+#define R_OK_CLEAN()            \
+    ZIC_RES_VAR_NAME = OK;      \
     goto exit;
 
-#define R_OK_FINAL() \
-    ZIC_RES_VAR_NAME = OK; \
+#define R_OK_FINAL()            \
+    ZIC_RES_VAR_NAME = OK;      \
     goto deferfinal;
 
-#define R_OK_LABEL(LABEL) \
-    ZIC_RES_VAR_NAME = OK; \
+#define R_OK_LABEL(LABEL)       \
+    ZIC_RES_VAR_NAME = OK;      \
     goto defer##LABEL;
 
 #define RET_OK(...) GET_LABEL_MACRO(__VA_ARGS__, R_OK_LABEL, R_OK_FINAL)(__VA_ARGS__)
 
-#define ERROR_CLEAN(ERR) \
-    ZIC_RES_VAR_NAME = ERR; \
+#define ERROR_CLEAN(ERR)        \
+    ZIC_RES_VAR_NAME = ERR;     \
     goto exit;
 
-#define ERROR_FINAL(ERR) \
-    ZIC_RES_VAR_NAME = ERR; \
+#define ERROR_FINAL(ERR)        \
+    ZIC_RES_VAR_NAME = ERR;     \
     goto deferfinal;
 
 #define ERROR_LABEL(ERR, LABEL) \
-    ZIC_RES_VAR_NAME = ERR; \
+    ZIC_RES_VAR_NAME = ERR;     \
     goto defer##LABEL;
 
 #define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
 
-#define FAIL_CLEAN() \
-    ZIC_RES_VAR_NAME = FAIL; \
+#define FAIL_CLEAN()            \
+    ZIC_RES_VAR_NAME = FAIL;    \
     goto exit;
 
-#define FAIL_FINAL() \
-    ZIC_RES_VAR_NAME = FAIL; \
+#define FAIL_FINAL()            \
+    ZIC_RES_VAR_NAME = FAIL;    \
     goto deferfinal;
 
-#define FAIL_LABEL(LABEL) \
-    ZIC_RES_VAR_NAME = FAIL; \
+#define FAIL_LABEL(LABEL)       \
+    ZIC_RES_VAR_NAME = FAIL;    \
     goto defer##LABEL;
 
 #define FAIL(...) GET_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
 
 
-// UNWRAP DEFINES
+// UNWRAP DEFINES_CLEAN
 
 
-#define UNWRAP_CLEAN(EXP) { \
-    int res = (EXP); \
+#define UNWRAP_CLEAN(EXP) {     \
+    int res = (EXP);            \
     if (res < 0) { ERROR_CLEAN(ERR_SYS); } \
     else if (res) { ERROR_CLEAN(res); } }
 
 #define UNWRAP_ERR_CLEAN(EXP, ERR) { \
-    const int res = (EXP); \
+    const int res = (EXP);      \
     if (res < 0) ERROR_CLEAN(ERR) \
     else if (res) ERROR_CLEAN(res) }
 
@@ -156,13 +175,13 @@
 #define UNWRAP_USER_CLEAN(EXP) UNWRAP_ERR_CLEAN(EXP, ERR_USER)
 
 #define UNWRAP_NEG_CLEAN(EXP) { \
-    int res = (EXP); \
+    int res = (EXP);            \
     if (res < 0) ERROR_CLEAN(ERR_SYS); }
 
 #define UNWRAP_NSYS_CLEAN(EXP) UNWRAP_NEG_CLEAN(EXP)
 
 #define UNWRAP_NERR_CLEAN(EXP, ERR) { \
-    const int res = (EXP); \
+    const int res = (EXP);      \
     if (res < 0) { ERROR_CLEAN(ERR) } 
 
 #define UNWRAP_NLOCAL_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_LOCAL) 
@@ -170,13 +189,13 @@
 #define UNWRAP_NUSER_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_USER) 
 
 #define UNWRAP_PTR_CLEAN(EXP) { \
-    const void *res = (EXP); \
+    const void *res = (EXP);    \
     if (!res) { ERROR_CLEAN(ERR_SYS) } }
 
 #define UNWRAP_PTR_SYS_CLEAN(EXP) UNWRAP_PTR_CLEAN(EXP)
 
 #define UNWRAP_PTR_ERR_CLEAN(EXP, ERR) { \
-    const void *res = (EXP); \
+    const void *res = (EXP);    \
     if (!res) { ERROR_CLEAN(ERR) } }
 
 #define UNWRAP_PTR_LOCAL_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_LOCAL)
@@ -184,7 +203,7 @@
 #define UNWRAP_PTR_USER_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_USER)
 
 
-// PTR_UNWRAP
+// PTR_UNWRAP_CLEAN
 
 
 #define PTR_UNWRAP_CLEAN(EXP) \
@@ -203,7 +222,7 @@
 
 
 
-// CATCH
+// CATCH_CLEAN
 
 #define CATCH_CLEAN(ERR, ...) \
     ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
