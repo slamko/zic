@@ -119,6 +119,10 @@ typedef int result;
     fprintf(stderr, ERR, ##__VA_ARGS__); \
     fprintf(stderr, "\n");
 
+#define CATCH_CLEAN(ERR, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_CLEANUP();
+
 #define CATCH_FINAL(ERR, ...) \
     ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
     FAIL();
@@ -129,14 +133,22 @@ typedef int result;
 
 #define CATCH(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_LABEL, CATCH_FINAL)(__VA_ARGS__)
 
+#define CATCH_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
+
 #define CATCH_SYS_FINAL() perror(ERROR_PREFIX); FAIL();
 
-#define CATCH_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_CLEAN(LABEL);
+#define CATCH_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_LABEL(LABEL);
 
 #define CATCH_SYS(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_SYS_LABEL, CATCH_SYS_FINAL)(__VA_ARGS__)
 
 
 // UNWRAP
+
+
+#define UNWRAP_CLEANUP(EXP) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR_CLEANUP(ERR_SYS); } \
+    else if (res) { ERROR_CLEANUP(res); } }
 
 #define UNWRAP_FINAL(EXP) { \
     int res = (EXP); \
@@ -150,7 +162,14 @@ typedef int result;
 
 #define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
+#define UNWRAP_SYS_CLEANUP(EXP) UNWRAP_CLEANUP(EXP)
+
 #define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
+
+#define UNWRAP_ERR_CLEANUP(EXP, ERR) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR_CLEANUP(ERR); } \
+    else if (res) { ERROR_CLEANUP(res); } }
 
 #define UNWRAP_ERR_FINAL(EXP, ERR) { \
     int res = (EXP); \
@@ -164,13 +183,20 @@ typedef int result;
 
 #define UNWRAP_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_ERR_LABEL, UNWRAP_ERR_FINAL)(__VA_ARGS__)
 
+#define UNWRAP_LOCAL_CLEANUP(EXP) UNWRAP_ERR_CLEANUP(EXP, ERR_LOCAL)
+
 #define UNWRAP_LOCAL(...) UNWRAP_ERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_USER_CLEANUP(EXP) UNWRAP_ERR_CLEANUP(EXP, ERR_USER)
 
 #define UNWRAP_USER(...) UNWRAP_ERR(__VA_ARGS__, ERR_USER)
 
 
 // UNWRAP_NEG
 
+#define UNWRAP_NEG_CLEANUP(EXP) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR_CLEANUP(ERR_SYS); } }
 
 #define UNWRAP_NEG_FINAL(EXP) { \
     int res = (EXP); \
@@ -182,7 +208,13 @@ typedef int result;
 
 #define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
 
+#define UNWRAP_NSYS(EXP) UWNRAP_NEG_CLEANUP(EXP) 
+
 #define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
+
+#define UNWRAP_NERR_CLEANUP(EXP, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) { ERROR_CLEANUP(ERR) } 
 
 #define UNWRAP_NERR_FINAL(EXP, ERR) { \
     const int res = (EXP); \
@@ -194,7 +226,11 @@ typedef int result;
 
 #define UNWRAP_NERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NERR_LABEL, UNWRAP_NERR_FINAL)(__VA_ARGS__)
 
+#define UNWRAP_NLOCAL_CLEANUP(EXP) UNWRAP_NERR_CLEANUP(EXP, ERR_LOCAL)
+
 #define UNWRAP_NLOCAL(...) UNWRAP_NERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_NUSER_CLEANUP(EXP) UNWRAP_NERR_CLEANUP(EXP, ERR_USER)
 
 #define UNWRAP_NUSER(...) UNWRAP_NERR(__VA_ARGS__, ERR_USER)
 
@@ -202,8 +238,12 @@ typedef int result;
 // UNWRAP_PTR
 
 
-#define UNWRAP_PTR_FINAL(EXP) { \
-    const void *res = (EXP); \
+#define UNWRAP_PTR_CLEANUP(EXP) {   \
+    const void *res = (EXP);        \
+    if (!res) { ERROR_CLEANUP(ERR_SYS) } }
+
+#define UNWRAP_PTR_FINAL(EXP) {     \
+    const void *res = (EXP);        \
     if (!res) { ERROR(ERR_SYS) } }
 
 #define UNWRAP_PTR_LABEL(EXP, LABEL) { \
@@ -212,7 +252,13 @@ typedef int result;
 
 #define UNWRAP_PTR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
 
+#define UNWRAP_PTR_SYS_CLEANUP(EXP) UNWRAP_PTR_CLEANUP(EXP)
+
 #define UNWRAP_PTR_SYS(EXP, ...) UNWRAP_PTR(EXP, __VA_ARGS__)
+
+#define UNWRAP_PTR_ERR_CLEANUP(EXP, ERR) { \
+    const void *res = (EXP); \
+    if (!res) { ERROR_CLEANUP(ERR) } }
 
 #define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
     const void *res = (EXP); \
@@ -224,7 +270,11 @@ typedef int result;
 
 #define UNWRAP_PTR_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_ERR_LABEL, UNWRAP_PTR_ERR_FINAL)
 
+#define UNWRAP_PTR_LOCAL_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_LOCAL)
+
 #define UNWRAP_PTR_LOCAL(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_PTR_USER_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_USER)
 
 #define UNWRAP_PTR_USER(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_USER)
 
