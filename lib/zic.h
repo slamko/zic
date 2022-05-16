@@ -56,7 +56,7 @@ typedef enum {
 
 typedef int result;
 
-#if __STDC_VERSION__ == 201112L
+#if __STDC_VERSION__ >= 201112L
 
 #define DEFINE_ERROR(ERR_NAME, NUM) \
     enum {                          \
@@ -94,9 +94,9 @@ typedef int result;
 
 #define IS_ERROR(EXP) (EXP != OK)
 
-#define ISNULL(PTR) !PTR
+#define ISNULL(PTR) (!PTR)
 
-#define IS_NOTNULL(PTR) PTR
+#define IS_NOTNULL(PTR) (PTR)
 
 
 // CATCH
@@ -219,9 +219,9 @@ typedef int result;
 
 #ifdef FULL_API
 
-#include "ptrunwrap.h"
-
 #include "matchwith.h"
+
+#include "ptrunwrap.h"
 
 #include "defer.h"
 
@@ -245,8 +245,6 @@ typedef int result;
     exit: ;                   \
     RETURN_ZIC_RESULT()       \
 }
-
-
 
 #else // FULL_API
 

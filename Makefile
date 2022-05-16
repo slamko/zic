@@ -1,13 +1,20 @@
 CC=gcc
+CFLAGS=-ggdb
 TARGET=test_zic
 LIBS=-Ilib
+SRC_TARGET=test/test.c
 
 all: $(TARGET)
 
 .PHONY: clean test_zic
 
-$(TARGET): test/test.c lib/*.h
-	$(CC) -ggdb $(LIBS) $< -o $@
+$(TARGET): $(SRC_TARGET) lib/*.h
+	$(CC) $(CFLAGS) $(LIBS) $< -o $@
+
+mini: CFLAGS+= -DMINI_ZIC
+mini: clean 
+mini: SRC_TARGET=test/mini.c
+mini: $(TARGET)
 
 .SILENT: test
 

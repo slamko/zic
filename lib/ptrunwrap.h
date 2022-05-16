@@ -40,15 +40,9 @@
 #ifndef ZIC_DEFER
 
 #undef DEF
-#undef END
-#undef END_CLEAN
 
 #define DEF { \
     ZIC_PTR_UNWRAP_INIT()
-
-#define END RETURN_ZIC_RESULT() }
-
-#define END_CLEAN END
 
 #endif
 
