@@ -13,6 +13,10 @@
 #define FULL_API
 #endif
 
+#define OK_CLEANUP() \
+    ZIC_RES_VAR_NAME = OK; \
+    goto cleanup; 
+
 #define RET_OK_FINAL() \
     return OK;
 
@@ -21,6 +25,10 @@
     goto LABEL;
 
 #define RET_OK(...) GET_SINGLE_LABEL_MACRO(__VA_ARGS__, RET_OK_LABEL, RET_OK_FINAL)(__VA_ARGS__)
+
+#define ERROR_CLEANUP(ERR) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto zic_cleanup;
 
 #define ERROR_FINAL(ERR) \
     return ERR;
@@ -31,6 +39,10 @@
 
 #define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
 
+#define FAIL_CLEANUP() \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto cleanup;
+
 #define FAIL_FINAL() \
     return FAIL;
 
@@ -40,11 +52,11 @@
 
 #define FAIL(...) GET_SINGLE_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
-#define RETURN_ZIC_RESULT() return ZIC_RES_VAR_NAME;
+#define RETURN_ZIC_RESULT() zic_cleanup: return ZIC_RES_VAR_NAME;
 
 #define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME;
 
-#define CLEANUP(CLEAN) CLEAN; RETURN_ZIC_RESULT()
+#define CLEANUP(CLEAN) zic_cleanup: CLEAN; return ZIC_RES_VAR_NAME;
 
 typedef enum {
     OK = 0,

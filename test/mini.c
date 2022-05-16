@@ -30,21 +30,25 @@ defer_close_file(int argc, char **argv) {
 
 
 result
-defer_free_t(int argc, char **argv) DEF
+defer_free_t(int argc, char **argv) {
     char *str = NULL;
     FILE *fp = NULL;
+
     ZIC_RESULT_INIT()
+    ZIC_PTR_UNWRAP_INIT()
+
+    DEFINE_ERROR(TO_LONG_STRING, 11)
 
     fp = PTR_UNWRAP (fopen("file1", "r"))
 
     str = PTR_UNWRAP (calloc(10, sizeof(*str)), close_file)
 
     if (argc != 2) {
-        ERROR(ERR_INVARG, free_str)
+        ERROR_CLEANUP(ERR_INVARG)
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERROR(ERR_USER, free_str)
+        ERROR_CLEANUP(TO_LONG_STRING)
     }
     
     strcpy(str, argv[1]);
