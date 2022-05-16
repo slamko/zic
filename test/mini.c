@@ -28,6 +28,13 @@ defer_close_file(int argc, char **argv) {
     UNWRAP_NEG (fputc(ch, stdout))
 }
 
+result 
+some(int arg) {
+    printf("%d", arg);
+
+    RET_OK()
+}
+
 
 result
 defer_free_t(int argc, char **argv) {

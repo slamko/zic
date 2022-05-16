@@ -115,15 +115,13 @@
     ZIC_RES_VAR_NAME = OK;      \
     goto exit;
 
-#define R_OK_FINAL()            \
+#define RET_OK()            \
     ZIC_RES_VAR_NAME = OK;      \
     goto deferfinal;
 
-#define R_OK_LABEL(LABEL)       \
+#define RET_OK_LABEL(LABEL)       \
     ZIC_RES_VAR_NAME = OK;      \
     goto defer##LABEL;
-
-#define RET_OK(...) GET_LABEL_MACRO(__VA_ARGS__, R_OK_LABEL, R_OK_FINAL)(__VA_ARGS__)
 
 #define ERROR_CLEAN(ERR)        \
     ZIC_RES_VAR_NAME = ERR;     \
@@ -143,17 +141,13 @@
     ZIC_RES_VAR_NAME = FAIL;    \
     goto exit;
 
-#define FAIL_FINAL()            \
+#define FAIL()            \
     ZIC_RES_VAR_NAME = FAIL;    \
     goto deferfinal;
 
 #define FAIL_LABEL(LABEL)       \
     ZIC_RES_VAR_NAME = FAIL;    \
     goto defer##LABEL;
-
-#define FAIL(...) GET_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
-
-
 
 // UNWRAP DEFINES_CLEAN
 

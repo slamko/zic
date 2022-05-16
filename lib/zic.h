@@ -17,14 +17,12 @@
     ZIC_RES_VAR_NAME = OK; \
     goto cleanup; 
 
-#define RET_OK_FINAL() \
+#define RET_OK() \
     return OK;
 
 #define RET_OK_LABEL(LABEL) \
     ZIC_RES_VAR_NAME = OK; \
     goto LABEL;
-
-#define RET_OK(...) GET_SINGLE_LABEL_MACRO(__VA_ARGS__, RET_OK_LABEL, RET_OK_FINAL)(__VA_ARGS__)
 
 #define ERROR_CLEANUP(ERR) \
     ZIC_RES_VAR_NAME = ERR; \
@@ -43,14 +41,12 @@
     ZIC_RES_VAR_NAME = FAIL; \
     goto cleanup;
 
-#define FAIL_FINAL() \
+#define FAIL() \
     return FAIL;
 
 #define FAIL_LABEL(LABEL) \
     ZIC_RES_VAR_NAME = FAIL; \
     goto LABEL;
-
-#define FAIL(...) GET_SINGLE_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
 
 #define RETURN_ZIC_RESULT() zic_cleanup: return ZIC_RES_VAR_NAME;
 
