@@ -52,19 +52,16 @@ defer_free_t(int argc, char **argv) {
     }
     
     strcpy(str, argv[1]);
-    UNWRAP (puts(str), free_str)
+    UNWRAP_CLEANUP (puts(str))
 
     CLEANUP(
         free_str: free(str);
-        close_file: fclose(fp);)
+        close_file: fclose(fp)
+    )
 }
 
 int
-main(int argc, char **argv) DEF
+main(int argc, char **argv) {
     result res = defer_free_t(argc, argv); 
-    MATCH res WITH (
-        OK: return 24,
-        ERR_SYS: return OK,
-        ERR_USER: return 67
-    )
-END_CLEAN
+    return res;
+}
