@@ -12,6 +12,8 @@
 
 DEFINE_ERROR(ERR_INVARG, 10)
 
+DEFINE_ERROR_MSG(ERR_TO_LONG_STR, 11, "to long string")
+
 result
 defer_close_file(int argc, char **argv) {
     ZIC_PTR_UNWRAP_INIT()
@@ -44,8 +46,6 @@ defer_free_t(int argc, char **argv) {
     ZIC_RESULT_INIT()
     ZIC_PTR_UNWRAP_INIT()
 
-    DEFINE_ERROR(TO_LONG_STRING, 11)
-
     fp = PTR_UNWRAP (fopen("file1", "r"))
 
     str = PTR_UNWRAP (calloc(10, sizeof(*str)), close_file)
@@ -55,7 +55,7 @@ defer_free_t(int argc, char **argv) {
     }
 
     if (strnlen(argv[1], 10) >= 10) {
-        ERROR_CLEANUP(TO_LONG_STRING)
+        ERROR_CLEANUP(ERR_TO_LONG_STR)
     }
     
     strcpy(str, argv[1]);
@@ -70,5 +70,13 @@ defer_free_t(int argc, char **argv) {
 int
 main(int argc, char **argv) {
     result res = defer_free_t(argc, argv); 
+
+    switch (res)
+    {
+    case ERR_TO_LONG_STR:
+        CATCH(ERR_TO_STR(ERR_TO_LONG_STR))
+        break;
+    }
+
     return res;
 }

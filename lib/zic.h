@@ -3,6 +3,8 @@
 
 #define GET_LABEL_MACRO(_A1, _A2, MACRO, ...) MACRO
 
+#define GET_3ARG_MACRO(_A1, _A2, _A3, MACRO, ...) MACRO
+
 #define GET_SINGLE_LABEL_MACRO(_A1, MACRO, ...) MACRO
 
 #define ERROR_PREFIX "error"
@@ -64,12 +66,23 @@ typedef enum {
 
 typedef int result;
 
+
+// ERROR FORMATTING
+
+
+#define GEN_ERR_MSG(MSG) ZIC_error_msg_##MSG
+
+#define ERR_MSG_NAME(MSG) GEN_ERR_MSG(MSG)
+
 #if __STDC_VERSION__ >= 201112L
 
 #define DEFINE_ERROR(ERR_NAME, NUM) \
     enum {                          \
         ERR_NAME = NUM              \
     };
+#define DEFINE_ERROR_MSG(ERR_NAME, NUM, ERR_MSG) \
+    enum { ERR_NAME = NUM };                     \
+    const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG;
 
 #else
 
@@ -92,7 +105,15 @@ typedef int result;
         ERR_NAME = NUM \
     };
 
+#define DEFINE_ERROR(ERR_NAME, NUM) \
+    enum ENUM_NAME(NUM) {           \
+        ERR_NAME = NUM              \
+    };                              \
+    const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG;
+
 #endif
+
+#define ERR_TO_STR(ERR) ERR_MSG_NAME(ERR)
 
 #define IS_HANDLED(ERR) (ERR == FAIL || ERR == OK)
 
@@ -109,25 +130,21 @@ typedef int result;
 
 // CATCH
 
-
-#define ZIC_BASE_CATCH(ERR, ...) \
-    fprintf(stderr, ERROR_PREFIX); \
-    fprintf(stderr, ERR, ##__VA_ARGS__); \
-    fprintf(stderr, "\n");
-
 #define CATCH_CLEAN(ERR, ...) \
     ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
     FAIL_CLEANUP();
 
-#define CATCH_FINAL(ERR, ...) \
-    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
-    FAIL();
+#define CATCH(...) \
+    fprintf(stderr, ERROR_PREFIX); \
+    fprintf(stderr, ##__VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    FAIL()
 
-#define CATCH_LABEL(ERR, LABEL, ...) \
-    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+#define CATCH_LABEL(LABEL, ...) \
+    fprintf(stderr, ERROR_PREFIX); \
+    fprintf(stderr, ##__VA_ARGS__); \
+    fprintf(stderr, "\n"); \
     FAIL_LABEL(LABEL);
-
-#define CATCH(...) GET_LABEL_MACRO(__VA_ARGS__, CATCH_LABEL, CATCH_FINAL)(__VA_ARGS__)
 
 #define CATCH_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
 
