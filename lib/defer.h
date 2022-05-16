@@ -1,5 +1,5 @@
 
-#ifdef ZIC_DEFER
+#ifndef ZIC_DEFER
 #define ZIC_DEFER
 
 #define DEFER1(LABEL, ST)  goto next##LABEL; defer##LABEL: defer1: ST; goto defer2; next##LABEL:;
@@ -68,8 +68,149 @@
 #define DEFER31_FINAL(ST) goto next_final; deferfinal: defer31: ST; goto exit; next_final:;
 #define DEFER32_FINAL(ST) goto next_final; deferfinal: defer32: ST; goto exit; next_final:;
 
-#define CLEANUP(LABEL, CLEAN) LABEL: CLEAN;
-
 #define NO_CLEANUP() deferfinal: ;
+
+// DEF END
+
+#define DEF { \
+    result ZIC_RES_VAR_NAME = OK; \
+    void *ZIC_unwrap_ptr_res = NULL;
+
+#define END goto deferfinal;  \
+    errexit:                  \
+    exit: ;                   \
+    return ZIC_RES_VAR_NAME;  \
+}
+
+#define END_CLEAN deferfinal: \
+    errexit:                  \
+    exit: ;                   \
+    return ZIC_RES_VAR_NAME;  \
+}
+
+
+// ERROR OK FAIL
+
+
+#define R_OK_CLEAN() \
+    ZIC_RES_VAR_NAME = OK; \
+    goto exit;
+
+#define R_OK_FINAL() \
+    ZIC_RES_VAR_NAME = OK; \
+    goto deferfinal;
+
+#define R_OK_LABEL(LABEL) \
+    ZIC_RES_VAR_NAME = OK; \
+    goto defer##LABEL;
+
+#define RET_OK(...) GET_LABEL_MACRO(__VA_ARGS__, R_OK_LABEL, R_OK_FINAL)(__VA_ARGS__)
+
+#define ERROR_CLEAN(ERR) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto exit;
+
+#define ERROR_FINAL(ERR) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto deferfinal;
+
+#define ERROR_LABEL(ERR, LABEL) \
+    ZIC_RES_VAR_NAME = ERR; \
+    goto defer##LABEL;
+
+#define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
+
+#define FAIL_CLEAN() \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto exit;
+
+#define FAIL_FINAL() \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto deferfinal;
+
+#define FAIL_LABEL(LABEL) \
+    ZIC_RES_VAR_NAME = FAIL; \
+    goto defer##LABEL;
+
+#define FAIL(...) GET_LABEL_MACRO(__VA_ARGS__, FAIL_LABEL, FAIL_FINAL)(__VA_ARGS__)
+
+
+
+// UNWRAP DEFINES
+
+
+#define UNWRAP_CLEAN(EXP) { \
+    int res = (EXP); \
+    if (res < 0) { ERROR_CLEAN(ERR_SYS); } \
+    else if (res) { ERROR_CLEAN(res); } }
+
+#define UNWRAP_ERR_CLEAN(EXP, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR) \
+    else if (res) ERROR_CLEAN(res) }
+
+#define UNWRAP_SYS_CLEAN(EXP) UNWRAP_CLEAN(EXP)
+
+#define UNWRAP_LOCAL_CLEAN(EXP) UNWRAP_ERR_CLEAN(EXP, ERR_LOCAL)
+
+#define UNWRAP_USER_CLEAN(EXP) UNWRAP_ERR_CLEAN(EXP, ERR_USER)
+
+#define UNWRAP_NEG_CLEAN(EXP) { \
+    int res = (EXP); \
+    if (res < 0) ERROR_CLEAN(ERR_SYS); }
+
+#define UNWRAP_NSYS_CLEAN(EXP) UNWRAP_NEG_CLEAN(EXP)
+
+#define UNWRAP_NERR_CLEAN(EXP, ERR) { \
+    const int res = (EXP); \
+    if (res < 0) { ERROR_CLEAN(ERR) } 
+
+#define UNWRAP_NLOCAL_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_LOCAL) 
+
+#define UNWRAP_NUSER_CLEAN(EXP) UNWRAP_NERR_CLEAN(EXP, ERR_USER) 
+
+#define UNWRAP_PTR_CLEAN(EXP) { \
+    const void *res = (EXP); \
+    if (!res) { ERROR_CLEAN(ERR_SYS) } }
+
+#define UNWRAP_PTR_SYS_CLEAN(EXP) UNWRAP_PTR_CLEAN(EXP)
+
+#define UNWRAP_PTR_ERR_CLEAN(EXP, ERR) { \
+    const void *res = (EXP); \
+    if (!res) { ERROR_CLEAN(ERR) } }
+
+#define UNWRAP_PTR_LOCAL_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_LOCAL)
+
+#define UNWRAP_PTR_USER_CLEAN(EXP) UNWRAP_PTR_ERR_CLEAN(EXP, ERR_USER)
+
+
+// PTR_UNWRAP
+
+
+#define PTR_UNWRAP_CLEAN(EXP) \
+    (ZIC_PTR_UNWRAP_VAR_NAME = (EXP)) ? ZIC_PTR_UNWRAP_VAR_NAME : NULL; \
+    { if (!ZIC_PTR_UNWRAP_VAR_NAME) { ERROR_CLEAN(ERR_SYS) } }
+
+#define PTR_UNWRAP_SYS_CLEAN(EXP) PTR_UNWRAP_CLEAN(EXP)
+
+#define PTR_UNWRAP_ERR_CLEAN(EXP, ERR) { \
+    (ZIC_PTR_UNWRAP_VAR_NAME = (EXP)) ? ZIC_PTR_UNWRAP_VAR_NAME : NULL; \
+    { if (!ZIC_PTR_UNWRAP_VAR_NAME) ERROR_CLEAN(ERR) }
+
+#define PTR_UNWRAP_LOCAL_CLEAN(EXP) PTR_UNWRAP_ERR_CLEAN(EXP, ERR_LOCAL)
+
+#define PTR_UNWRAP_USER_CLEAN(EXP) PTR_UNWRAP_ERR_CLEAN(EXP, ERR_USER)
+
+
+
+// CATCH
+
+#define CATCH_CLEAN(ERR, ...) \
+    ZIC_BASE_CATCH(ERR, __VA_ARGS__) \
+    FAIL_CLEAN();
+
+#define CATCH_SYS_CLEAN() perror(ERROR_PREFIX); FAIL_CLEAN();
+
+
 
 #endif // ZIC_DEFER
