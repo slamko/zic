@@ -11,6 +11,8 @@
 
 #define ZIC_RES_VAR_NAME ZIC_res
 
+#define ZIC_RESULT ZIC_RES_VAR_NAME
+
 #ifndef MINI_ZIC
 #define FULL_API
 #endif
@@ -130,6 +132,41 @@ typedef int result;
 #define IS_ERR(ERR) == ERR
 
 
+#define PRINT_ERR(...) fprintf(stderr, ##__VA_ARGS__);
+
+// TRY CATCH
+
+
+#define TRY(EXP, CATCH_ST) \
+    (ZIC_RES_VAR_NAME = (EXP)); \
+    if (IS_ERROR(ZIC_RES_VAR_NAME)) { \
+        CATCH_ST ; \
+    }
+
+#define UNREACHABLE PRINT_ERR("unreachable code")
+
+#define CATCH(CATCH_ERR_NUM, CATCH_ST) \
+    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
+        CATCH_ST ;\
+    }
+
+#define CATCH_ERR(CATCH_ERR_NUM) \
+    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
+        PRINT_ERR(ERROR_PREFIX ": ") \
+        PRINT_ERR(ERR_TO_STR(CATCH_ERR_NUM)) \
+        PRINT_ERR("\n") \
+    }
+
+#define CATCH_SYS() \
+    if (ZIC_RES_VAR_NAME == ERR_SYS) { \
+        perror(ERROR_PREFIX);
+    }
+
+#define CATCH_SYS_ERR(CATCH_ERR_NUM) \
+    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
+        perror(ERROR_PREFIX);
+    }
+
 // HANDLE
 
 #define HANDLE_CLEAN(ERR, ...) \
@@ -137,21 +174,21 @@ typedef int result;
     FAIL_CLEANUP();
 
 #define HANDLE(...) \
-    fprintf(stderr, ERROR_PREFIX ": "); \
-    fprintf(stderr, ##__VA_ARGS__); \
-    fprintf(stderr, "\n"); \
+    PRINT_ERR(ERROR_PREFIX ": ") \
+    PRINT_ERR(__VA_ARGS__) \
+    PRINT_ERR("\n") \
     FAIL()
 
 #define HANDLE_ERR(ERR) \
-    fprintf(stderr, ERROR_PREFIX ": "); \
-    fprintf(stderr, ERR_TO_STR(ERR)); \
-    fprintf(stderr, "\n"); \
+    PRINT_ERR(ERROR_PREFIX ": ") \
+    PRINT_ERR(ERR_TO_STR(ERR)) \
+    PRINT_ERR("\n") \
     FAIL()
 
 #define HANDLE_LABEL(LABEL, ...) \
-    fprintf(stderr, ERROR_PREFIX ": "); \
-    fprintf(stderr, ##__VA_ARGS__); \
-    fprintf(stderr, "\n"); \
+    PRINT_ERR(ERROR_PREFIX ": ") \
+    PRINT_ERR(__VA_ARGS__) \
+    PRINT_ERR("\n") \
     FAIL_LABEL(LABEL);
 
 #define HANDLE_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
@@ -332,7 +369,7 @@ typedef int result;
 #else // FULL_API
 
 #if !defined DEF && !defined END_CLEAN
-#define DEF {
+#define DEF { ZIC_RESULT_INIT()
     
 #define END_CLEAN }
 #endif

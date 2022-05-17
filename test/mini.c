@@ -69,10 +69,15 @@ defer_free_t(int argc, char **argv) {
 
 int
 main(int argc, char **argv) {
-    result res = defer_free_t(argc, argv);
+    ZIC_RESULT_INIT()
 
-    if (res IS_ERR(ERR_TO_LONG_STR))
-        HANDLE_ERR(ERR_TO_LONG_STR)    
+    TRY (defer_free_t(argc, argv), 
+        CATCH_ERR(ERR_TO_LONG_STR) 
+        CATCH(ERR_INVARG, 
+            PRINT_ERR("NEPRAVILNOE ARGUMENT")
+        )
+        CATCH_SYS()
+    )
 
-    return res;
+    RETURN_ZIC_RESULT()
 }

@@ -54,6 +54,7 @@
 #undef DEF
 
 #define DEF { \
+    ZIC_RESULT_INIT() \
     ZIC_PTR_UNWRAP_INIT()
 
 #endif
