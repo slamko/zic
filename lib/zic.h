@@ -13,6 +13,8 @@
 
 #define ZIC_RESULT ZIC_RES_VAR_NAME
 
+#define ZIC_CLEANUP_LABEL_NAME_LABEL_NAME ZIC_CLEANUP_LABEL_NAME
+
 #ifndef MINI_ZIC
 #define FULL_API
 #endif
@@ -30,7 +32,7 @@
 
 #define ERROR_CLEANUP(ERR) \
     ZIC_RES_VAR_NAME = ERR; \
-    goto zic_cleanup;
+    goto ZIC_CLEANUP_LABEL_NAME;
 
 #define ERROR_FINAL(ERR) \
     return ERR;
@@ -43,7 +45,7 @@
 
 #define FAIL_CLEANUP() \
     ZIC_RES_VAR_NAME = FAIL; \
-    goto cleanup;
+    goto ZIC_CLEANUP_LABEL_NAME;
 
 #define FAIL() \
     return FAIL;
@@ -52,11 +54,11 @@
     ZIC_RES_VAR_NAME = FAIL; \
     goto LABEL;
 
-#define RETURN_ZIC_RESULT() zic_cleanup: return ZIC_RES_VAR_NAME;
+#define RETURN_ZIC_RESULT() ZIC_CLEANUP_LABEL_NAME: return ZIC_RES_VAR_NAME;
 
 #define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME;
 
-#define CLEANUP(CLEAN) zic_cleanup: CLEAN; return ZIC_RES_VAR_NAME;
+#define CLEANUP(CLEAN) ZIC_CLEANUP_LABEL_NAME: CLEAN; return ZIC_RES_VAR_NAME;
 
 typedef enum {
     OK = 0,
@@ -171,8 +173,8 @@ typedef int result;
 
 // HANDLE
 
-#define HANDLE_CLEAN(ERR, ...) \
-    ZIC_BASE_HANDLE(ERR, __VA_ARGS__) \
+#define HANDLE_CLEANUP(...) \
+    FORMAT_ERR(__VA_ARGS__) \
     FAIL_CLEANUP();
 
 #define HANDLE(...) \
