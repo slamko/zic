@@ -71,6 +71,12 @@ typedef int result;
 
 // ERROR FORMATTING
 
+#define PRINT_ERR(...) fprintf(stderr, ##__VA_ARGS__);
+
+#define FORMAT_ERR(...) \
+    PRINT_ERR(ERROR_PREFIX ": ") \
+    PRINT_ERR(__VA_ARGS__) \
+    PRINT_ERR("\n") \
 
 #define GEN_ERR_MSG(MSG) ZIC_error_msg_##MSG
 
@@ -132,8 +138,6 @@ typedef int result;
 #define IS_ERR(ERR) == ERR
 
 
-#define PRINT_ERR(...) fprintf(stderr, ##__VA_ARGS__);
-
 // TRY CATCH
 
 
@@ -152,19 +156,17 @@ typedef int result;
 
 #define CATCH_ERR(CATCH_ERR_NUM) \
     if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
-        PRINT_ERR(ERROR_PREFIX ": ") \
-        PRINT_ERR(ERR_TO_STR(CATCH_ERR_NUM)) \
-        PRINT_ERR("\n") \
+        FORMAT_ERR(ERR_TO_STR(CATCH_ERR_NUM)) \
     }
 
 #define CATCH_SYS() \
     if (ZIC_RES_VAR_NAME == ERR_SYS) { \
-        perror(ERROR_PREFIX);
+        perror(ERROR_PREFIX); \
     }
 
 #define CATCH_SYS_ERR(CATCH_ERR_NUM) \
     if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
-        perror(ERROR_PREFIX);
+        perror(ERROR_PREFIX); \
     }
 
 // HANDLE
@@ -174,21 +176,15 @@ typedef int result;
     FAIL_CLEANUP();
 
 #define HANDLE(...) \
-    PRINT_ERR(ERROR_PREFIX ": ") \
-    PRINT_ERR(__VA_ARGS__) \
-    PRINT_ERR("\n") \
+    FORMAT_ERR(__VA_ARGS__) \
     FAIL()
 
 #define HANDLE_ERR(ERR) \
-    PRINT_ERR(ERROR_PREFIX ": ") \
-    PRINT_ERR(ERR_TO_STR(ERR)) \
-    PRINT_ERR("\n") \
+    FORMAT_ERR(ERR_TO_STR(ERR)) \
     FAIL()
 
 #define HANDLE_LABEL(LABEL, ...) \
-    PRINT_ERR(ERROR_PREFIX ": ") \
-    PRINT_ERR(__VA_ARGS__) \
-    PRINT_ERR("\n") \
+    FORMAT_ERR(__VA_ARGS__) \
     FAIL_LABEL(LABEL);
 
 #define HANDLE_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
