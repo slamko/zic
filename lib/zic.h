@@ -54,7 +54,7 @@
     ZIC_RES_VAR_NAME = FAIL; \
     goto LABEL;
 
-#define RETURN_ZIC_RESULT() ZIC_CLEANUP_LABEL_NAME: return ZIC_RES_VAR_NAME;
+#define ZIC_RETURN_RESULT() ZIC_CLEANUP_LABEL_NAME: return ZIC_RES_VAR_NAME;
 
 #define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME;
 
@@ -208,13 +208,13 @@ typedef int result;
 
 #define UNWRAP_FINAL(EXP) { \
     int res = (EXP); \
-    if (res < 0) { ERROR(ERR_SYS); } \
-    else if (res) { ERROR(res); } }
+    if (res < 0) { ERROR_FINAL(ERR_SYS); } \
+    else if (res) { ERROR_FINAL(res); } }
 
 #define UNWRAP_LABEL(EXP, LABEL) { \
     int res = (EXP); \
-    if (res < 0) { ERROR(ERR_SYS, LABEL); } \
-    else if (res) { ERROR(res, LABEL); } }
+    if (res < 0) { ERROR_LABEL(ERR_SYS, LABEL); } \
+    else if (res) { ERROR_LABEL(res, LABEL); } }
 
 #define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
 
@@ -229,8 +229,8 @@ typedef int result;
 
 #define UNWRAP_ERR_FINAL(EXP, ERR) { \
     int res = (EXP); \
-    if (res < 0) { ERROR(ERR); } \
-    else if (res) { ERROR(res); } }
+    if (res < 0) { ERROR_FINAL(ERR); } \
+    else if (res) { ERROR_FINAL(res); } }
 
 #define UNWRAP_ERR_LABEL(EXP, LABEL, ERR) { \
     int res = (EXP); \
@@ -256,11 +256,11 @@ typedef int result;
 
 #define UNWRAP_NEG_FINAL(EXP) { \
     int res = (EXP); \
-    if (res < 0) { ERROR(ERR_SYS); } }
+    if (res < 0) { ERROR_FINAL(ERR_SYS); } }
 
 #define UNWRAP_NEG_LABEL(EXP, LABEL) { \
     int res = (EXP); \
-    if (res < 0) { ERROR(ERR_SYS, LABEL); } }
+    if (res < 0) { ERROR_LABEL(ERR_SYS, LABEL); } }
 
 #define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
 
@@ -274,7 +274,7 @@ typedef int result;
 
 #define UNWRAP_NERR_FINAL(EXP, ERR) { \
     const int res = (EXP); \
-    if (res < 0) { ERROR(ERR) } 
+    if (res < 0) { ERROR_FINAL(ERR) } 
 
 #define UNWRAP_NERR_LABEL(EXP, LABEL, ERR) { \
     const int res = (EXP); \
@@ -300,11 +300,11 @@ typedef int result;
 
 #define UNWRAP_PTR_FINAL(EXP) {     \
     const void *res = (EXP);        \
-    if (!res) { ERROR(ERR_SYS) } }
+    if (!res) { ERROR_FINAL(ERR_SYS) } }
 
 #define UNWRAP_PTR_LABEL(EXP, LABEL) { \
     const void *res = (EXP); \
-    if (!res) { ERROR(ERR_SYS, defer##LABEL) } }
+    if (!res) { ERROR_LABEL(ERR_SYS, LABEL) } }
 
 #define UNWRAP_PTR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
 
@@ -318,13 +318,13 @@ typedef int result;
 
 #define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
     const void *res = (EXP); \
-    if (!res) { ERROR(ERR) } }
+    if (!res) { ERROR_FINAL(ERR) } }
 
 #define UNWRAP_PTR_ERR_LABEL(EXP, LABEL, ERR) { \
     const void *res = (EXP); \
     if (!res) { ERROR_LABEL(ERR, LABEL) } }
 
-#define UNWRAP_PTR_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_ERR_LABEL, UNWRAP_PTR_ERR_FINAL)
+#define UNWRAP_PTR_ERR(...) GET_3ARG_MACRO(__VA_ARGS__, UNWRAP_PTR_ERR_LABEL, UNWRAP_PTR_ERR_FINAL)(__VA_ARGS__)
 
 #define UNWRAP_PTR_LOCAL_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_LOCAL)
 
