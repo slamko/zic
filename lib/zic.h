@@ -19,9 +19,9 @@
 #define FULL_API
 #endif
 
-#define OK_CLEANUP() \
+#define RET_OK_CLEANUP() \
     ZIC_RES_VAR_NAME = OK; \
-    goto cleanup; 
+    goto ZIC_CLEANUP_LABEL_NAME_LABEL_NAME; 
 
 #define RET_OK() \
     return OK;
