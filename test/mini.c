@@ -79,5 +79,5 @@ main(int argc, char **argv) {
         CATCH_SYS()
     )
 
-    RETURN_ZIC_RESULT()
+    ZIC_RETURN_RESULT()
 }

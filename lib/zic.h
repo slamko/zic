@@ -1,6 +1,13 @@
 #ifndef ZIC_ZIC
 #define ZIC_ZIC
 
+#if defined(_MSVC_TRADITIONAL) && _MSVC_TRADITIONAL
+#warning Some macro wrappers may not be available for MSVC. Specify /Zc:preprocessor option to enable full macro-feature set
+#else
+
+#define ZIC_ENABLE_LABEL_OVERLOADING
+#endif
+
 #define GET_LABEL_MACRO(_A1, _A2, MACRO, ...) MACRO
 
 #define GET_3ARG_MACRO(_A1, _A2, _A3, MACRO, ...) MACRO
@@ -41,7 +48,9 @@
     ZIC_RES_VAR_NAME = ERR; \
     goto LABEL;
 
+#ifdef ZIC_ENABLE_LABLE_OVERLOADING
 #define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
+#endif
 
 #define FAIL_CLEANUP() \
     ZIC_RES_VAR_NAME = FAIL; \
@@ -72,7 +81,6 @@ typedef int result;
 
 
 // ERROR FORMATTING
-
 #define PRINT_ERR(...) fprintf(stderr, ##__VA_ARGS__);
 
 #define FORMAT_ERR(...) \
@@ -173,6 +181,10 @@ typedef int result;
 
 // HANDLE
 
+#define HANDLE_NO_FORMAT(HANDLE_STR) \
+    HANDLE_STR; \
+    FAIL()
+
 #define HANDLE_CLEANUP(...) \
     FORMAT_ERR(__VA_ARGS__) \
     FAIL_CLEANUP();
@@ -216,11 +228,7 @@ typedef int result;
     if (res < 0) { ERROR_LABEL(ERR_SYS, LABEL); } \
     else if (res) { ERROR_LABEL(res, LABEL); } }
 
-#define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_SYS_CLEANUP(EXP) UNWRAP_CLEANUP(EXP)
-
-#define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
 
 #define UNWRAP_ERR_CLEANUP(EXP, ERR) { \
     int res = (EXP); \
@@ -237,16 +245,23 @@ typedef int result;
     if (res < 0) { ERROR_LABEL(ERR, LABEL); } \
     else if (res) { ERROR_LABEL(ERR, LABEL); } }
 
-#define UNWRAP_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_ERR_LABEL, UNWRAP_ERR_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_LOCAL_CLEANUP(EXP) UNWRAP_ERR_CLEANUP(EXP, ERR_LOCAL)
-
-#define UNWRAP_LOCAL(...) UNWRAP_ERR(__VA_ARGS__, ERR_LOCAL)
 
 #define UNWRAP_USER_CLEANUP(EXP) UNWRAP_ERR_CLEANUP(EXP, ERR_USER)
 
-#define UNWRAP_USER(...) UNWRAP_ERR(__VA_ARGS__, ERR_USER)
 
+#ifdef ZIC_ENABLE_LABLE_OVERLOADING
+
+#define UNWRAP_ERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_ERR_LABEL, UNWRAP_ERR_FINAL)(__VA_ARGS__)
+
+#define UNWRAP(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_LABEL, UNWRAP_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_SYS(...) UNWRAP(__VA_ARGS__)
+
+#define UNWRAP_LOCAL(...) UNWRAP_ERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_USER(...) UNWRAP_ERR(__VA_ARGS__, ERR_USER)
+#endif 
 
 // UNWRAP_NEG
 
@@ -262,11 +277,8 @@ typedef int result;
     int res = (EXP); \
     if (res < 0) { ERROR_LABEL(ERR_SYS, LABEL); } }
 
-#define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_NSYS_CLEANUP(EXP) UWNRAP_NEG_CLEANUP(EXP) 
 
-#define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
 
 #define UNWRAP_NERR_CLEANUP(EXP, ERR) { \
     const int res = (EXP); \
@@ -280,16 +292,22 @@ typedef int result;
     const int res = (EXP); \
     if (res < 0) { ERROR_LABEL(ERR, LABEL) } 
 
-#define UNWRAP_NERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NERR_LABEL, UNWRAP_NERR_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_NLOCAL_CLEANUP(EXP) UNWRAP_NERR_CLEANUP(EXP, ERR_LOCAL)
-
-#define UNWRAP_NLOCAL(...) UNWRAP_NERR(__VA_ARGS__, ERR_LOCAL)
 
 #define UNWRAP_NUSER_CLEANUP(EXP) UNWRAP_NERR_CLEANUP(EXP, ERR_USER)
 
-#define UNWRAP_NUSER(...) UNWRAP_NERR(__VA_ARGS__, ERR_USER)
+#ifdef ZIC_ENABLE_LABLE_OVERLOADING
 
+#define UNWRAP_NEG(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NEG_LABEL, UNWRAP_NEG_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_NSYS(...) UNWRAP_NEG(__VA_ARGS__)
+
+#define UNWRAP_NERR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_NERR_LABEL, UNWRAP_NERR_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_NLOCAL(...) UNWRAP_NERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_NUSER(...) UNWRAP_NERR(__VA_ARGS__, ERR_USER)
+#endif
 
 // UNWRAP_PTR
 
@@ -306,11 +324,7 @@ typedef int result;
     const void *res = (EXP); \
     if (!res) { ERROR_LABEL(ERR_SYS, LABEL) } }
 
-#define UNWRAP_PTR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_PTR_SYS_CLEANUP(EXP) UNWRAP_PTR_CLEANUP(EXP)
-
-#define UNWRAP_PTR_SYS(EXP, ...) UNWRAP_PTR(EXP, __VA_ARGS__)
 
 #define UNWRAP_PTR_ERR_CLEANUP(EXP, ERR) { \
     const void *res = (EXP); \
@@ -324,16 +338,22 @@ typedef int result;
     const void *res = (EXP); \
     if (!res) { ERROR_LABEL(ERR, LABEL) } }
 
-#define UNWRAP_PTR_ERR(...) GET_3ARG_MACRO(__VA_ARGS__, UNWRAP_PTR_ERR_LABEL, UNWRAP_PTR_ERR_FINAL)(__VA_ARGS__)
-
 #define UNWRAP_PTR_LOCAL_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_LOCAL)
-
-#define UNWRAP_PTR_LOCAL(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_LOCAL)
 
 #define UNWRAP_PTR_USER_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_USER)
 
-#define UNWRAP_PTR_USER(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_USER)
+#ifdef ZIC_ENABLE_LABLE_OVERLOADING
 
+#define UNWRAP_PTR(...) GET_LABEL_MACRO(__VA_ARGS__, UNWRAP_PTR_LABEL, UNWRAP_PTR_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_PTR_SYS(EXP, ...) UNWRAP_PTR(EXP, __VA_ARGS__)
+
+#define UNWRAP_PTR_ERR(...) GET_3ARG_MACRO(__VA_ARGS__, UNWRAP_PTR_ERR_LABEL, UNWRAP_PTR_ERR_FINAL)(__VA_ARGS__)
+
+#define UNWRAP_PTR_LOCAL(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_LOCAL)
+
+#define UNWRAP_PTR_USER(...) UNWRAP_PTR_ERR(__VA_ARGS__, ERR_USER)
+#endif
 
 #ifdef FULL_API
 
