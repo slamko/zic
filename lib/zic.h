@@ -3,7 +3,7 @@
 
 #if defined(_MSVC_TRADITIONAL) && _MSVC_TRADITIONAL
 #warning Some macro wrappers may not be available for MSVC. Specify /Zc:preprocessor option to enable full macro-feature set
-#elif defined __GNUC__
+#elif defined __GNUC__ && !defined MINI_ZIC
 #undef ZIC_ENABLE_LABEL_OVERLOADING
 #define ZIC_ENABLE_LABEL_OVERLOADING
 #endif
@@ -50,6 +50,8 @@
 
 #ifdef ZIC_ENABLE_LABEL_OVERLOADING
 #define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
+#else
+#define ERROR(ERR) ERROR_FINAL(ERR)
 #endif
 
 #define FAIL_CLEANUP() \
@@ -207,8 +209,11 @@ typedef int result;
 
 #define HANDLE_SYS_LABEL(LABEL) perror(ERROR_PREFIX); FAIL_LABEL(LABEL);
 
+#ifdef ZIC_ENABLE_LABEL_OVERLOADING
 #define HANDLE_SYS(...) GET_LABEL_MACRO(__VA_ARGS__, HANDLE_SYS_LABEL, HANDLE_SYS_FINAL)(__VA_ARGS__)
-
+#else
+#define HANDLE_SYS() HANDLE_SYS_FINAL()
+#endif
 
 // UNWRAP
 
