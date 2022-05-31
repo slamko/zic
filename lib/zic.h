@@ -71,6 +71,8 @@
 
 #define CLEANUP(CLEAN) ZIC_CLEANUP_LABEL_NAME: CLEAN; return ZIC_RES_VAR_NAME;
 
+#define CLEANUP_OK(CLEAN) ZIC_CLEANUP_LABEL_NAME: CLEAN; return OK;
+
 typedef enum {
     OK = 0,
     FAIL = 1,
@@ -283,7 +285,7 @@ typedef int result;
 
 
 #define RES_UNWRAP_CLEANUP(EXP) { \
-    res = (EXP); \
+    ZIC_RES_VAR_NAME = (EXP); \
     if (ZIC_RES_VAR_NAME < 0) { ERROR_CLEANUP(ERR_SYS); } \
     else if (ZIC_RES_VAR_NAME) { ERROR_CLEANUP(ZIC_RES_VAR_NAME); } }
 
