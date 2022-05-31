@@ -26,27 +26,27 @@
 #define FULL_API
 #endif
 
-#define RET_OK_CLEANUP() \
-    ZIC_RES_VAR_NAME = OK; \
-    goto ZIC_CLEANUP_LABEL_NAME; 
+#define RET_OK_CLEANUP() {                     \
+    ZIC_RES_VAR_NAME = OK;                     \
+    goto ZIC_CLEANUP_LABEL_NAME; }
 
 #define RET_OK() \
     return OK;
 
-#define RET_OK_LABEL(LABEL) \
-    ZIC_RES_VAR_NAME = OK; \
-    goto LABEL;
+#define RET_OK_LABEL(LABEL) {                  \
+    ZIC_RES_VAR_NAME = OK;                     \
+    goto LABEL; }
 
-#define ERROR_CLEANUP(ERR) \
-    ZIC_RES_VAR_NAME = ERR; \
-    goto ZIC_CLEANUP_LABEL_NAME;
+#define ERROR_CLEANUP(ERR) {                   \
+    ZIC_RES_VAR_NAME = ERR;                    \
+    goto ZIC_CLEANUP_LABEL_NAME; }
 
 #define ERROR_FINAL(ERR) \
     return ERR;
 
-#define ERROR_LABEL(ERR, LABEL) \
-    ZIC_RES_VAR_NAME = ERR; \
-    goto LABEL;
+#define ERROR_LABEL(ERR, LABEL) {              \
+    ZIC_RES_VAR_NAME = ERR;                    \
+    goto LABEL; }
 
 #ifdef ZIC_ENABLE_LABEL_OVERLOADING
 #define ERROR(...) GET_LABEL_MACRO(__VA_ARGS__, ERROR_LABEL, ERROR_FINAL)(__VA_ARGS__)
@@ -54,16 +54,16 @@
 #define ERROR(ERR) ERROR_FINAL(ERR)
 #endif
 
-#define FAIL_CLEANUP() \
+#define FAIL_CLEANUP() {    \
     ZIC_RES_VAR_NAME = FAIL; \
-    goto ZIC_CLEANUP_LABEL_NAME;
+    goto ZIC_CLEANUP_LABEL_NAME; }
 
 #define FAIL() \
     return FAIL;
 
-#define FAIL_LABEL(LABEL) \
+#define FAIL_LABEL(LABEL) { \
     ZIC_RES_VAR_NAME = FAIL; \
-    goto LABEL;
+    goto LABEL; }
 
 #define ZIC_RETURN_RESULT() return ZIC_RES_VAR_NAME;
 
