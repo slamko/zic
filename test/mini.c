@@ -12,8 +12,6 @@
 
 DEFINE_ERROR(ERR_INVARG, 10)
 
-DEFINE_ERROR_MSG(ERR_TO_LONG_STR, 11, "to long string")
-
 result
 defer_close_file(int argc, char **argv) {
     ZIC_PTR_UNWRAP_INIT()
@@ -67,12 +65,27 @@ defer_free_t(int argc, char **argv) {
     )
 }
 
+
+#define CLEAN(LABEL) UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)
+
+result some() {
+  char soup = malloc(69);
+  ZIC_RESULT_INIT()
+  
+  strncpy(soup, "privet mam", 69);
+  TRY (strcmp(soup, "alle mama"),
+	   CLEAN(cl_some)
+  )
+
+	CLEANUP(free(soup); cl_some: printf("cleaned"))
+}
+
+
 int
 main(int argc, char **argv) {
     ZIC_RESULT_INIT()
 
     TRY (defer_free_t(argc, argv), 
-        CATCH_ERR(ERR_TO_LONG_STR) 
         CATCH(ERR_INVARG, 
             FORMAT_ERR("NEPRAVILNOE ARGUMENT")
         )
