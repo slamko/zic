@@ -14,26 +14,29 @@ DEFINE_ERROR(ERR_INVARG, 10)
 
 result
 defer_close_file(int argc, char **argv) {
-    ZIC_PTR_UNWRAP_INIT()
+    ZIC_RESULT_INIT()
 
     char file[] = "file1";
     FILE *fp;
     char ch;
 
-    fp = PTR_UNWRAP (fopen(file, "r"))
+    UNWRAP_PTR (fp = fopen(file, "r"))
 
     printf("%p\n", fp);
 
     ch = fgetc(fp);
-    UNWRAP_NEG (fputc(ch, stdout))
+    TRY (fputc(ch, stdout), DO_CLEAN(cl_fp))
+		CLEANUP(cl_fp, fclose(fp))
+		ZIC_RETURN_RESULT()
 }
-
+		
 result 
 some(int arg) {
     printf("%d", arg);
 
     RET_OK()
 }
+
 
 
 result

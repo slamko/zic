@@ -1,0 +1,16 @@
+[
+  {
+    "arguments": [
+      "/bin/gcc",
+      "-c",
+      "-ggdb",
+      "-Ilib",
+      "-o",
+      "test_zic",
+      "test/mini.c"
+    ],
+    "directory": "/home/slamko/Documents/cc/zic",
+    "file": "/home/slamko/Documents/cc/zic/test/mini.c",
+    "output": "/home/slamko/Documents/cc/zic/test_zic"
+  }
+]
