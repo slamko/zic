@@ -33,6 +33,10 @@
 #define RET_OK() \
     return OK;
 
+#define RET_OK_DO_CLEAN(CLEAN) {			\
+	ZIC_RES_VAR_NAME = OK; \
+	CLEAN ; }
+
 #define RET_OK_LABEL(LABEL) {                  \
     ZIC_RES_VAR_NAME = OK;                     \
     goto LABEL; }
@@ -48,11 +52,11 @@
     ZIC_RES_VAR_NAME = ERR;                    \
     goto GOTO; }
 
-#ifdef ZIC_ENABLE_GOTO_OVERLOADING
-#define ERROR(...) GET_GOTO_MACRO(__VA_ARGS__, ERROR_GOTO, ERROR_FINAL)(__VA_ARGS__)
-#else
+#define ERROR_DO_CLEAN(ERR, CLEAN) {			\
+	ZIC_RES_VAR_NAME = ERR; \
+	CLEAN ; }
+
 #define ERROR(ERR) ERROR_FINAL(ERR)
-#endif
 
 #define FAIL_CLEANUP() {    \
     ZIC_RES_VAR_NAME = FAIL; \
@@ -65,13 +69,21 @@
     ZIC_RES_VAR_NAME = FAIL; \
     goto GOTO; }
 
+#define FAIL_DO_CLEAN(CLEAN) {					\
+	ZIC_RES_VAR_NAME = FAIL; \
+	CLEAN ; }
+
 #define ZIC_RETURN_RESULT() return ZIC_RES_VAR_NAME;
 
 #define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME = 0;
 
 #define CLEANUP(LABEL, CLEAN) LABEL: CLEAN;
 
+#define CLEANUP_ALL(CLEAN) ZIC_CLEANUP_LABEL_NAME: CLEAN;
+
 #define DO_CLEAN(LABEL) UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)
+
+#define DO_CLEAN_ALL() UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME) 
 
 typedef enum {
     OK = 0,
@@ -232,6 +244,10 @@ typedef int result;
     int res = (EXP); \
     if (res < 0) { ERROR_FINAL(ERR_SYS); } \
     else if (res) { ERROR_FINAL(res); } }
+
+#define TRY_UNWRAP(EXP) ZIC_RES_VAR_NAME = (EXP); \
+	if (ZIC_RES_UNWRAP)
+
 
 #define UNWRAP_GOTO(EXP, GOTO) { \
     int res = (EXP); \
@@ -449,6 +465,12 @@ typedef int result;
 #define UNWRAP_PTR_LOCAL(EXP) UNWRAP_PTR_ERR_FINAL(EXP, ERR_LOCAL)
 
 #define UNWRAP_PTR_USER(EXP) UNWRAP_PTR_ERR_FINAL(EXP, ERR_USER)
+
+#define TRY_PTR(EXP, CLEAN)                                                    \
+    { \                                                                         \
+        const void *res = (EXP); \
+		if (!res){ CLEAN; }	 \
+}
 
 #ifdef FULL_API
 
