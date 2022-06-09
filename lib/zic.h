@@ -26,7 +26,7 @@
 #define FULL_API
 #endif
 
-#define RET_OK_CLEANUP() {                     \
+#define RET_OK_DO_CLEAN_ALL() {                     \
     ZIC_RES_VAR_NAME = OK;                     \
     goto ZIC_CLEANUP_LABEL_NAME; }
 
@@ -41,9 +41,9 @@
     ZIC_RES_VAR_NAME = OK;                     \
     goto LABEL; }
 
-#define ERROR_CLEANUP(ERR) {                   \
+#define ERROR_DO_CLEAN_ALL(ERR) {                   \
     ZIC_RES_VAR_NAME = ERR;                    \
-    goto ZIC_CLEANUP_GOTO_NAME; }
+    goto ZIC_CLEANUP_LABEL_NAME; }
 
 #define ERROR_FINAL(ERR) \
     return ERR;
@@ -58,9 +58,9 @@
 
 #define ERROR(ERR) ERROR_FINAL(ERR)
 
-#define FAIL_CLEANUP() {    \
+#define FAIL_DO_CLEAN_ALL() {    \
     ZIC_RES_VAR_NAME = FAIL; \
-    goto ZIC_CLEANUP_GOTO_NAME; }
+    goto ZIC_CLEANUP_LABEL_NAME; }
 
 #define FAIL() \
     return FAIL;
@@ -208,9 +208,9 @@ typedef int result;
     fprinf(stderr, HANDLE_STR); \
     FAIL()
 
-#define HANDLE_CLEANUP(...) \
+#define HANDLE_DO_CLEAN_ALL(...) \
     FORMAT_ERR(__VA_ARGS__) \
-    FAIL_CLEANUP();
+    FAIL_DO_CLEAN_ALL();
 
 #define HANDLE(...) \
     FORMAT_ERR(__VA_ARGS__) \
@@ -220,11 +220,16 @@ typedef int result;
     FORMAT_ERR(ERR_TO_STR(ERR)) \
     FAIL()
 
+#define HANDLE_DO_CLEAN(CLEAN, ...) \
+	ZIC_RES_VAR_NAME = FAIL; \
+	FORMAT_ERR(__VA_ARGS__); \
+	CLEAN;
+
 #define HANDLE_GOTO(GOTO, ...) \
     FORMAT_ERR(__VA_ARGS__) \
     FAIL_GOTO(GOTO);
 
-#define HANDLE_SYS_CLEANUP() perror(ERROR_PREFIX); FAIL_CLEANUP();
+#define HANDLE_SYS_DO_CLEAN_ALL() perror(ERROR_PREFIX); FAIL_DO_CLEAN_ALL();
 
 #define HANDLE_SYS_FINAL() perror(ERROR_PREFIX); FAIL();
 
@@ -235,10 +240,10 @@ typedef int result;
 // UNWRAP
 
 
-#define UNWRAP_CLEANUP(EXP) { \
+#define UNWRAP_DO_CLEAN_ALL(EXP) { \
     int res = (EXP); \
-    if (res < 0) { ERROR_CLEANUP(ERR_SYS); } \
-    else if (res) { ERROR_CLEANUP(res); } }
+    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } \
+    else if (res) { ERROR_DO_CLEAN_ALL(res); } }
 
 #define UNWRAP_FINAL(EXP) { \
     int res = (EXP); \
@@ -254,12 +259,12 @@ typedef int result;
     if (res < 0) { ERROR_GOTO(ERR_SYS, GOTO); } \
     else if (res) { ERROR_GOTO(res, GOTO); } }
 
-#define UNWRAP_SYS_CLEANUP(EXP) UNWRAP_CLEANUP(EXP)
+#define UNWRAP_SYS_DO_CLEAN_ALL(EXP) UNWRAP_DO_CLEAN_ALL(EXP)
 
-#define UNWRAP_ERR_CLEANUP(EXP, ERR) { \
+#define UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR) { \
     int res = (EXP); \
-    if (res < 0) { ERROR_CLEANUP(ERR); } \
-    else if (res) { ERROR_CLEANUP(res); } }
+    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR); } \
+    else if (res) { ERROR_DO_CLEAN_ALL(res); } }
 
 #define UNWRAP_ERR_FINAL(EXP, ERR) { \
     int res = (EXP); \
@@ -271,9 +276,9 @@ typedef int result;
     if (res < 0) { ERROR_GOTO(ERR, GOTO); } \
     else if (res) { ERROR_GOTO(ERR, GOTO); } }
 
-#define UNWRAP_LOCAL_CLEANUP(EXP) UNWRAP_ERR_CLEANUP(EXP, ERR_LOCAL)
+#define UNWRAP_LOCAL_DO_CLEAN_ALL(EXP) UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define UNWRAP_USER_CLEANUP(EXP) UNWRAP_ERR_CLEANUP(EXP, ERR_USER)
+#define UNWRAP_USER_DO_CLEAN_ALL(EXP) UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define UNWRAP_ERR(EXP, ERR) UNWRAP_ERR_FINAL(EXP, ERR)
 
@@ -289,10 +294,10 @@ typedef int result;
 // RESULT UNWRAP
 
 
-#define RES_UNWRAP_CLEANUP(EXP) { \
+#define RES_UNWRAP_DO_CLEAN_ALL(EXP) { \
     ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_CLEANUP(ERR_SYS); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_CLEANUP(ZIC_RES_VAR_NAME); } }
+    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } \
+    else if (ZIC_RES_VAR_NAME) { ERROR_DO_CLEAN_ALL(ZIC_RES_VAR_NAME); } }
 
 #define RES_UNWRAP_FINAL(EXP) { \
     ZIC_RES_VAR_NAME = (EXP); \
@@ -304,12 +309,12 @@ typedef int result;
     if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR_SYS, GOTO); } \
     else if (ZIC_RES_VAR_NAME) { ERROR_GOTO(ZIC_RES_VAR_NAME, GOTO); } }
 
-#define RES_UNWRAP_SYS_CLEANUP(EXP) RES_UNWRAP_CLEANUP(EXP)
+#define RES_UNWRAP_SYS_DO_CLEAN_ALL(EXP) RES_UNWRAP_DO_CLEAN_ALL(EXP)
 
-#define RES_UNWRAP_ERR_CLEANUP(EXP, ERR) { \
+#define RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR) { \
     ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_CLEANUP(ERR); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_CLEANUP(ZIC_RES_VAR_NAME); } }
+    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR); } \
+    else if (ZIC_RES_VAR_NAME) { ERROR_DO_CLEAN_ALL(ZIC_RES_VAR_NAME); } }
 
 #define RES_UNWRAP_ERR_FINAL(EXP, ERR) { \
     ZIC_RES_VAR_NAME = (EXP); \
@@ -321,9 +326,9 @@ typedef int result;
     if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR, GOTO); } \
     else if (ZIC_RES_VAR_NAME) { ERROR_GOTO(ERR, GOTO); } }
 
-#define RES_UNWRAP_LOCAL_CLEANUP(EXP) RES_UNWRAP_ERR_CLEANUP(EXP, ERR_LOCAL)
+#define RES_UNWRAP_LOCAL_DO_CLEAN_ALL(EXP) RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define RES_UNWRAP_USER_CLEANUP(EXP) RES_UNWRAP_ERR_CLEANUP(EXP, ERR_USER)
+#define RES_UNWRAP_USER_DO_CLEAN_ALL(EXP) RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define RES_UNWRAP_ERR(EXP, ERR) RES_UNWRAP_ERR_FINAL(EXP, ERR)
 
@@ -338,9 +343,9 @@ typedef int result;
 
 // UNWRAP_NEG
 
-#define UNWRAP_NEG_CLEANUP(EXP) { \
+#define UNWRAP_NEG_DO_CLEAN_ALL(EXP) { \
     int res = (EXP); \
-    if (res < 0) { ERROR_CLEANUP(ERR_SYS); } }
+    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } }
 
 #define UNWRAP_NEG_FINAL(EXP) { \
     int res = (EXP); \
@@ -350,11 +355,15 @@ typedef int result;
     int res = (EXP); \
     if (res < 0) { ERROR_GOTO(ERR_SYS, GOTO); } }
 
-#define UNWRAP_NSYS_CLEANUP(EXP) UWNRAP_NEG_CLEANUP(EXP) 
+#define TRY_UNWRAP_NEG(EXP, CLEAN) { \
+    ZIC_RES_VAR_NAME = (EXP); \
+    if (ZIC_RES_VAR_NAME < 0) { CLEAN; } }
 
-#define UNWRAP_NERR_CLEANUP(EXP, ERR) { \
+#define UNWRAP_NSYS_DO_CLEAN_ALL(EXP) UWNRAP_NEG_DO_CLEAN_ALL(EXP) 
+
+#define UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR) { \
     const int res = (EXP); \
-    if (res < 0) { ERROR_CLEANUP(ERR) } 
+    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR) } 
 
 #define UNWRAP_NERR_FINAL(EXP, ERR) { \
     const int res = (EXP); \
@@ -364,9 +373,9 @@ typedef int result;
     const int res = (EXP); \
     if (res < 0) { ERROR_GOTO(ERR, GOTO) } 
 
-#define UNWRAP_NLOCAL_CLEANUP(EXP) UNWRAP_NERR_CLEANUP(EXP, ERR_LOCAL)
+#define UNWRAP_NLOCAL_DO_CLEAN_ALL(EXP) UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define UNWRAP_NUSER_CLEANUP(EXP) UNWRAP_NERR_CLEANUP(EXP, ERR_USER)
+#define UNWRAP_NUSER_DO_CLEAN_ALL(EXP) UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define UNWRAP_NERR(EXP, ERR) UNWRAP_NERR_FINAL(EXP, ERR)
 
@@ -382,9 +391,9 @@ typedef int result;
 // RESULT UNWRAP_NEG
 
 
-#define RES_UNWRAP_NEG_CLEANUP(EXP) { \
+#define RES_UNWRAP_NEG_DO_CLEAN_ALL(EXP) { \
     ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_CLEANUP(ERR_SYS); } }
+    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } }
 
 #define RES_UNWRAP_NEG_FINAL(EXP) { \
     ZIC_RES_VAR_NAME = (EXP); \
@@ -394,11 +403,11 @@ typedef int result;
     ZIC_RES_VAR_NAME = (EXP); \
     if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR_SYS, GOTO); } }
 
-#define RES_UNWRAP_NSYS_CLEANUP(EXP) RES_UNWRAP_NEG_CLEANUP(EXP) 
+#define RES_UNWRAP_NSYS_DO_CLEAN_ALL(EXP) RES_UNWRAP_NEG_DO_CLEAN_ALL(EXP) 
 
-#define RES_UNWRAP_NERR_CLEANUP(EXP, ERR) { \
+#define RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR) { \
     ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_CLEANUP(ERR) } 
+    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR) } 
 
 #define RES_UNWRAP_NERR_FINAL(EXP, ERR) { \
     ZIC_RES_VAR_NAME = (EXP); \
@@ -408,9 +417,9 @@ typedef int result;
     ZIC_RES_VAR_NAME = (EXP); \
     if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR, GOTO) } 
 
-#define RES_UNWRAP_NLOCAL_CLEANUP(EXP) RES_UNWRAP_NERR_CLEANUP(EXP, ERR_LOCAL)
+#define RES_UNWRAP_NLOCAL_DO_CLEAN_ALL(EXP) RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define RES_UNWRAP_NUSER_CLEANUP(EXP) RES_UNWRAP_NERR_CLEANUP(EXP, ERR_USER)
+#define RES_UNWRAP_NUSER_DO_CLEAN_ALL(EXP) RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define RES_UNWRAP_NERR(EXP, ERR) RES_UNWRAP_NERR_FINAL(EXP, ERR)
 
@@ -426,9 +435,9 @@ typedef int result;
 // UNWRAP_PTR
 
 
-#define UNWRAP_PTR_CLEANUP(EXP) {   \
+#define UNWRAP_PTR_DO_CLEAN_ALL(EXP) {   \
     const void *res = (EXP);        \
-    if (!res) { ERROR_CLEANUP(ERR_SYS) } }
+    if (!res) { ERROR_DO_CLEAN_ALL(ERR_SYS) } }
 
 #define UNWRAP_PTR_FINAL(EXP) {     \
     const void *res = (EXP);        \
@@ -438,11 +447,11 @@ typedef int result;
     const void *res = (EXP); \
     if (!res) { ERROR_GOTO(ERR_SYS, GOTO) } }
 
-#define UNWRAP_PTR_SYS_CLEANUP(EXP) UNWRAP_PTR_CLEANUP(EXP)
+#define UNWRAP_PTR_SYS_DO_CLEAN_ALL(EXP) UNWRAP_PTR_DO_CLEAN_ALL(EXP)
 
-#define UNWRAP_PTR_ERR_CLEANUP(EXP, ERR) { \
+#define UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR) { \
     const void *res = (EXP); \
-    if (!res) { ERROR_CLEANUP(ERR) } }
+    if (!res) { ERROR_DO_CLEAN_ALL(ERR) } }
 
 #define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
     const void *res = (EXP); \
@@ -452,9 +461,9 @@ typedef int result;
     const void *res = (EXP); \
     if (!res) { ERROR_GOTO(ERR, GOTO) } }
 
-#define UNWRAP_PTR_LOCAL_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_LOCAL)
+#define UNWRAP_PTR_LOCAL_DO_CLEAN_ALL(EXP) UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define UNWRAP_PTR_USER_CLEANUP(EXP) UNWRAP_PTR_ERR_CLEANUP(EXP, ERR_USER)
+#define UNWRAP_PTR_USER_DO_CLEAN_ALL(EXP) UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define UNWRAP_PTR_ERR(EXP, ERR) UNWRAP_PTR_ERR_FINAL(EXP, ERR)
 

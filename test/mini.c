@@ -10,11 +10,9 @@
 #include "ptrunwrap.h"
 #include "zic.h"
 
-result some(){
+result some() { RET_OK(); }
 
-    RET_OK()}
-
-DEFINE_ERROR(ERR_INVARG, 10);
+/* DEFINE_ERROR(ERR_INVARG, 10); */
 
 DEFINE_ERROR_MSG(ERR_TOO_LONG_STRING, 11, "Too long string")
 
@@ -58,7 +56,7 @@ result defer_free_t(int argc, char **argv) {
     }
 
     strcpy(str, argv[1]);
-    TRY (puts(str), DO_CLEAN_ALL());
+    UNWRAP_DO_CLEAN_ALL(puts(str));
 
     CLEANUP_ALL(free(str));
 
@@ -72,7 +70,7 @@ result some() {
     ZIC_RESULT_INIT()
 
     strncpy(soup, "privet mam", 69);
-    TRY (strcmp(soup, "alle mama"), DO_CLEAN_ALL());
+    TRY(strcmp(soup, "alle mama"), DO_CLEAN_ALL());
 
     CLEANUP_ALL(free(soup));
 }
