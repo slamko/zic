@@ -26,64 +26,83 @@
 #define FULL_API
 #endif
 
-#define RET_OK_DO_CLEAN_ALL() {                     \
-    ZIC_RES_VAR_NAME = OK;                     \
-    goto ZIC_CLEANUP_LABEL_NAME; }
+#define RET_OK_DO_CLEAN_ALL()                                                  \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = OK;                                                 \
+        goto ZIC_CLEANUP_LABEL_NAME;                                           \
+    }
 
-#define RET_OK() \
-    return OK;
+#define RET_OK() return OK;
 
-#define RET_OK_DO_CLEAN(CLEAN) {			\
-	ZIC_RES_VAR_NAME = OK; \
-	CLEAN ; }
+#define RET_OK_DO_CLEAN(CLEAN)                                                 \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = OK;                                                 \
+        CLEAN;                                                                 \
+    }
 
-#define RET_OK_LABEL(LABEL) {                  \
-    ZIC_RES_VAR_NAME = OK;                     \
-    goto LABEL; }
+#define RET_OK_LABEL(LABEL)                                                    \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = OK;                                                 \
+        goto LABEL;                                                            \
+    }
 
-#define ERROR_DO_CLEAN_ALL(ERR) {                   \
-    ZIC_RES_VAR_NAME = ERR;                    \
-    goto ZIC_CLEANUP_LABEL_NAME; }
+#define ERROR_DO_CLEAN_ALL(ERR)                                                \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = ERR;                                                \
+        goto ZIC_CLEANUP_LABEL_NAME;                                           \
+    }
 
-#define ERROR_FINAL(ERR) \
-    return ERR;
+#define ERROR_FINAL(ERR) return ERR;
 
-#define ERROR_GOTO(ERR, GOTO) {              \
-    ZIC_RES_VAR_NAME = ERR;                    \
-    goto GOTO; }
+#define ERROR_GOTO(ERR, GOTO)                                                  \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = ERR;                                                \
+        goto GOTO;                                                             \
+    }
 
-#define ERROR_DO_CLEAN(ERR, CLEAN) {			\
-	ZIC_RES_VAR_NAME = ERR; \
-	CLEAN ; }
+#define ERROR_DO_CLEAN(ERR, CLEAN)                                             \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = ERR;                                                \
+        CLEAN;                                                                 \
+    }
 
 #define ERROR(ERR) ERROR_FINAL(ERR)
 
-#define FAIL_DO_CLEAN_ALL() {    \
-    ZIC_RES_VAR_NAME = FAIL; \
-    goto ZIC_CLEANUP_LABEL_NAME; }
+#define FAIL_DO_CLEAN_ALL()                                                    \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = FAIL;                                               \
+        goto ZIC_CLEANUP_LABEL_NAME;                                           \
+    }
 
-#define FAIL() \
-    return FAIL;
+#define FAIL() return FAIL;
 
-#define FAIL_GOTO(GOTO) { \
-    ZIC_RES_VAR_NAME = FAIL; \
-    goto GOTO; }
+#define FAIL_GOTO(GOTO)                                                        \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = FAIL;                                               \
+        goto GOTO;                                                             \
+    }
 
-#define FAIL_DO_CLEAN(CLEAN) {					\
-	ZIC_RES_VAR_NAME = FAIL; \
-	CLEAN ; }
+#define FAIL_DO_CLEAN(CLEAN)                                                   \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = FAIL;                                               \
+        CLEAN;                                                                 \
+    }
 
 #define ZIC_RETURN_RESULT() return ZIC_RES_VAR_NAME;
 
 #define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME = 0;
 
-#define CLEANUP(LABEL, CLEAN) LABEL: CLEAN;
+#define CLEANUP(LABEL, CLEAN)                                                  \
+    LABEL:                                                                     \
+    CLEAN;
 
-#define CLEANUP_ALL(CLEAN) ZIC_CLEANUP_LABEL_NAME: CLEAN;
+#define CLEANUP_ALL(CLEAN)                                                     \
+    ZIC_CLEANUP_LABEL_NAME:                                                    \
+    CLEAN;
 
 #define DO_CLEAN(LABEL) UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)
 
-#define DO_CLEAN_ALL() UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME) 
+#define DO_CLEAN_ALL() UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)
 
 typedef enum {
     OK = 0,
@@ -95,14 +114,13 @@ typedef enum {
 
 typedef int result;
 
-
 // ERROR FORMATTING
 #define PRINT_ERR(...) fprintf(stderr, ##__VA_ARGS__);
 
-#define FORMAT_ERR(...) \
-    PRINT_ERR(ERROR_PREFIX ": ") \
-    PRINT_ERR(__VA_ARGS__) \
-    PRINT_ERR("\n") \
+#define FORMAT_ERR(...)                                                        \
+    PRINT_ERR(ERROR_PREFIX ": ")                                               \
+    PRINT_ERR(__VA_ARGS__)                                                     \
+    PRINT_ERR("\n")
 
 #define GEN_ERR_MSG(MSG) ZIC_error_msg_##MSG
 
@@ -110,12 +128,9 @@ typedef int result;
 
 #if __STDC_VERSION__ >= 201112L
 
-#define DEFINE_ERROR(ERR_NAME, NUM) \
-    enum {                          \
-        ERR_NAME = NUM              \
-    };
-#define DEFINE_ERROR_MSG(ERR_NAME, NUM, ERR_MSG) \
-    enum { ERR_NAME = NUM };                     \
+#define DEFINE_ERROR(ERR_NAME, NUM) enum { ERR_NAME = NUM };
+#define DEFINE_ERROR_MSG(ERR_NAME, NUM, ERR_MSG)                               \
+    enum { ERR_NAME = NUM };                                                   \
     const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG;
 
 #else
@@ -134,15 +149,10 @@ typedef int result;
 #define ENUM_NAME(NUM) GEN_ENUM_NAME(__LINE__, __FILE__, NUM)
 #endif
 
-#define DEFINE_ERROR(ERR_NAME, NUM) \
-    enum ENUM_NAME(NUM) { \
-        ERR_NAME = NUM \
-    };
+#define DEFINE_ERROR(ERR_NAME, NUM) enum ENUM_NAME(NUM) { ERR_NAME = NUM };
 
-#define DEFINE_ERROR(ERR_NAME, NUM) \
-    enum ENUM_NAME(NUM) {           \
-        ERR_NAME = NUM              \
-    };                              \
+#define DEFINE_ERROR(ERR_NAME, NUM)                                            \
+    enum ENUM_NAME(NUM) { ERR_NAME = NUM };                                    \
     const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG;
 
 #endif
@@ -163,118 +173,151 @@ typedef int result;
 
 #define IS_ERR(ERR) == ERR
 
-#define RES_IS_OK() (ZIC_RESULT_VAR_NAME == OK)
+#define RES_IS_OK() (ZIC_RES_VAR_NAME == OK)
 
-#define RES_IS_ERROR() (ZIC_RESULT_VAR_NAME != OK)
+#define RES_IS_ERROR() (ZIC_RES_VAR_NAME != OK)
 
-#define RES_IS_ERR(ERR) (ZIC_RESULT_VAR_NAME == ERR)
+#define RES_IS_ERR(ERR) (ZIC_RES_VAR_NAME == ERR)
 // TRY CATCH
 
-
-#define TRY(EXP, CATCH_ST) \
-    (ZIC_RES_VAR_NAME = (EXP)); \
-    if (IS_ERROR(ZIC_RES_VAR_NAME)) { \
-        CATCH_ST ; \
+#define TRY(EXP, CATCH_ST)                                                     \
+    (ZIC_RES_VAR_NAME = (EXP));                                                \
+    if (IS_ERROR(ZIC_RES_VAR_NAME)) {                                          \
+        CATCH_ST;                                                              \
     }
 
 #define UNREACHABLE PRINT_ERR("unreachable code")
 
-#define CATCH(CATCH_ERR_NUM, CATCH_ST) \
-    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
-        CATCH_ST ;\
+#define CATCH(CATCH_ERR_NUM, CATCH_ST)                                         \
+    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                                   \
+        CATCH_ST;                                                              \
     }
 
-#define CATCH_ERR(CATCH_ERR_NUM) \
-    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
-        FORMAT_ERR(ERR_TO_STR(CATCH_ERR_NUM)) \
+#define CATCH_ERR(CATCH_ERR_NUM)                                               \
+    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                                   \
+        FORMAT_ERR(ERR_TO_STR(CATCH_ERR_NUM))                                  \
     }
 
-#define CATCH_SYS() \
-    if (ZIC_RES_VAR_NAME == ERR_SYS) { \
-        perror(ERROR_PREFIX); \
+#define CATCH_SYS()                                                            \
+    if (ZIC_RES_VAR_NAME == ERR_SYS) {                                         \
+        perror(ERROR_PREFIX);                                                  \
     }
 
-#define CATCH_SYS_ERR(CATCH_ERR_NUM) \
-    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) { \
-        perror(ERROR_PREFIX); \
+#define CATCH_SYS_ERR(CATCH_ERR_NUM)                                           \
+    if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                                   \
+        perror(ERROR_PREFIX);                                                  \
     }
 
 #define THROW() UNWRAP_FINAL(ZIC_RES_VAR_NAME)
 
-#define THROW_GOTO(LABEL) UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)
 // HANDLE
 
-#define HANDLE_NO_FORMAT(HANDLE_STR) \
-    fprinf(stderr, HANDLE_STR); \
+#define HANDLE_NO_FORMAT(HANDLE_STR)                                           \
+    fprinf(stderr, HANDLE_STR);                                                \
     FAIL()
 
-#define HANDLE_DO_CLEAN_ALL(...) \
-    FORMAT_ERR(__VA_ARGS__) \
+#define HANDLE_DO_CLEAN_ALL(...)                                               \
+    FORMAT_ERR(__VA_ARGS__)                                                    \
     FAIL_DO_CLEAN_ALL();
 
-#define HANDLE(...) \
-    FORMAT_ERR(__VA_ARGS__) \
+#define HANDLE(...)                                                            \
+    FORMAT_ERR(__VA_ARGS__)                                                    \
     FAIL()
 
-#define HANDLE_ERR(ERR) \
-    FORMAT_ERR(ERR_TO_STR(ERR)) \
+#define HANDLE_ERR(ERR)                                                        \
+    FORMAT_ERR(ERR_TO_STR(ERR))                                                \
     FAIL()
 
-#define HANDLE_DO_CLEAN(CLEAN, ...) \
-	ZIC_RES_VAR_NAME = FAIL; \
-	FORMAT_ERR(__VA_ARGS__); \
-	CLEAN;
+#define HANDLE_DO_CLEAN(CLEAN, ...)                                            \
+    ZIC_RES_VAR_NAME = FAIL;                                                   \
+    FORMAT_ERR(__VA_ARGS__);                                                   \
+    CLEAN;
 
-#define HANDLE_GOTO(GOTO, ...) \
-    FORMAT_ERR(__VA_ARGS__) \
+#define HANDLE_GOTO(GOTO, ...)                                                 \
+    FORMAT_ERR(__VA_ARGS__)                                                    \
     FAIL_GOTO(GOTO);
 
-#define HANDLE_SYS_DO_CLEAN_ALL() perror(ERROR_PREFIX); FAIL_DO_CLEAN_ALL();
+#define HANDLE_SYS_DO_CLEAN_ALL()                                              \
+    perror(ERROR_PREFIX);                                                      \
+    FAIL_DO_CLEAN_ALL();
 
-#define HANDLE_SYS_FINAL() perror(ERROR_PREFIX); FAIL();
+#define HANDLE_SYS_FINAL()                                                     \
+    perror(ERROR_PREFIX);                                                      \
+    FAIL();
 
-#define HANDLE_SYS_GOTO(GOTO) perror(ERROR_PREFIX); FAIL_GOTO(GOTO);
+#define HANDLE_SYS_GOTO(GOTO)                                                  \
+    perror(ERROR_PREFIX);                                                      \
+    FAIL_GOTO(GOTO);
 
 #define HANDLE_SYS() HANDLE_SYS_FINAL()
 
 // UNWRAP
 
+#define UNWRAP_DO_CLEAN_ALL(EXP)                                               \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_DO_CLEAN_ALL(ERR_SYS);                                       \
+        } else if (res) {                                                      \
+            ERROR_DO_CLEAN_ALL(res);                                           \
+        }                                                                      \
+    }
 
-#define UNWRAP_DO_CLEAN_ALL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } \
-    else if (res) { ERROR_DO_CLEAN_ALL(res); } }
+#define UNWRAP_FINAL(EXP)                                                      \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_FINAL(ERR_SYS);                                              \
+        } else if (res) {                                                      \
+            ERROR_FINAL(res);                                                  \
+        }                                                                      \
+    }
 
-#define UNWRAP_FINAL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_FINAL(ERR_SYS); } \
-    else if (res) { ERROR_FINAL(res); } }
+#define TRY_UNWRAP(EXP)                                                        \
+    ZIC_RES_VAR_NAME = (EXP);                                                  \
+    if (ZIC_RES_UNWRAP)
 
-#define TRY_UNWRAP(EXP) ZIC_RES_VAR_NAME = (EXP); \
-	if (ZIC_RES_UNWRAP)
-
-
-#define UNWRAP_GOTO(EXP, GOTO) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_GOTO(ERR_SYS, GOTO); } \
-    else if (res) { ERROR_GOTO(res, GOTO); } }
+#define UNWRAP_GOTO(EXP, GOTO)                                                 \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_GOTO(ERR_SYS, GOTO);                                         \
+        } else if (res) {                                                      \
+            ERROR_GOTO(res, GOTO);                                             \
+        }                                                                      \
+    }
 
 #define UNWRAP_SYS_DO_CLEAN_ALL(EXP) UNWRAP_DO_CLEAN_ALL(EXP)
 
-#define UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR); } \
-    else if (res) { ERROR_DO_CLEAN_ALL(res); } }
+#define UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR)                                      \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_DO_CLEAN_ALL(ERR);                                           \
+        } else if (res) {                                                      \
+            ERROR_DO_CLEAN_ALL(res);                                           \
+        }                                                                      \
+    }
 
-#define UNWRAP_ERR_FINAL(EXP, ERR) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_FINAL(ERR); } \
-    else if (res) { ERROR_FINAL(res); } }
+#define UNWRAP_ERR_FINAL(EXP, ERR)                                             \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_FINAL(ERR);                                                  \
+        } else if (res) {                                                      \
+            ERROR_FINAL(res);                                                  \
+        }                                                                      \
+    }
 
-#define UNWRAP_ERR_GOTO(EXP, GOTO, ERR) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_GOTO(ERR, GOTO); } \
-    else if (res) { ERROR_GOTO(ERR, GOTO); } }
+#define UNWRAP_ERR_GOTO(EXP, GOTO, ERR)                                        \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_GOTO(ERR, GOTO);                                             \
+        } else if (res) {                                                      \
+            ERROR_GOTO(ERR, GOTO);                                             \
+        }                                                                      \
+    }
 
 #define UNWRAP_LOCAL_DO_CLEAN_ALL(EXP) UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
@@ -290,45 +333,75 @@ typedef int result;
 
 #define UNWRAP_USER(EXP) UNWRAP_ERR_FINAL(EXP, ERR_USER)
 
-
 // RESULT UNWRAP
 
+#define RES_UNWRAP_DO_CLEAN_ALL(EXP)                                           \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_DO_CLEAN_ALL(ERR_SYS);                                       \
+        } else if (ZIC_RES_VAR_NAME) {                                         \
+            ERROR_DO_CLEAN_ALL(ZIC_RES_VAR_NAME);                              \
+        }                                                                      \
+    }
 
-#define RES_UNWRAP_DO_CLEAN_ALL(EXP) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_DO_CLEAN_ALL(ZIC_RES_VAR_NAME); } }
+#define RES_UNWRAP_FINAL(EXP)                                                  \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_FINAL(ERR_SYS);                                              \
+        } else if (ZIC_RES_VAR_NAME) {                                         \
+            ERROR_FINAL(ZIC_RES_VAR_NAME);                                     \
+        }                                                                      \
+    }
 
-#define RES_UNWRAP_FINAL(EXP) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_FINAL(ERR_SYS); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_FINAL(ZIC_RES_VAR_NAME); } }
-
-#define RES_UNWRAP_GOTO(EXP, GOTO) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR_SYS, GOTO); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_GOTO(ZIC_RES_VAR_NAME, GOTO); } }
+#define RES_UNWRAP_GOTO(EXP, GOTO)                                             \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_GOTO(ERR_SYS, GOTO);                                         \
+        } else if (ZIC_RES_VAR_NAME) {                                         \
+            ERROR_GOTO(ZIC_RES_VAR_NAME, GOTO);                                \
+        }                                                                      \
+    }
 
 #define RES_UNWRAP_SYS_DO_CLEAN_ALL(EXP) RES_UNWRAP_DO_CLEAN_ALL(EXP)
 
-#define RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_DO_CLEAN_ALL(ZIC_RES_VAR_NAME); } }
+#define RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR)                                  \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_DO_CLEAN_ALL(ERR);                                           \
+        } else if (ZIC_RES_VAR_NAME) {                                         \
+            ERROR_DO_CLEAN_ALL(ZIC_RES_VAR_NAME);                              \
+        }                                                                      \
+    }
 
-#define RES_UNWRAP_ERR_FINAL(EXP, ERR) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_FINAL(ERR); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_FINAL(ZIC_RES_VAR_NAME); } }
+#define RES_UNWRAP_ERR_FINAL(EXP, ERR)                                         \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_FINAL(ERR);                                                  \
+        } else if (ZIC_RES_VAR_NAME) {                                         \
+            ERROR_FINAL(ZIC_RES_VAR_NAME);                                     \
+        }                                                                      \
+    }
 
-#define RES_UNWRAP_ERR_GOTO(EXP, GOTO, ERR) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR, GOTO); } \
-    else if (ZIC_RES_VAR_NAME) { ERROR_GOTO(ERR, GOTO); } }
+#define RES_UNWRAP_ERR_GOTO(EXP, GOTO, ERR)                                    \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_GOTO(ERR, GOTO);                                             \
+        } else if (ZIC_RES_VAR_NAME) {                                         \
+            ERROR_GOTO(ERR, GOTO);                                             \
+        }                                                                      \
+    }
 
-#define RES_UNWRAP_LOCAL_DO_CLEAN_ALL(EXP) RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
+#define RES_UNWRAP_LOCAL_DO_CLEAN_ALL(EXP)                                     \
+    RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define RES_UNWRAP_USER_DO_CLEAN_ALL(EXP) RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
+#define RES_UNWRAP_USER_DO_CLEAN_ALL(EXP)                                      \
+    RES_UNWRAP_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define RES_UNWRAP_ERR(EXP, ERR) RES_UNWRAP_ERR_FINAL(EXP, ERR)
 
@@ -340,38 +413,64 @@ typedef int result;
 
 #define RES_UNWRAP_USER(EXP) RES_UNWRAP_ERR_FINAL(EXP, ERR_USER)
 
-
 // UNWRAP_NEG
 
-#define UNWRAP_NEG_DO_CLEAN_ALL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } }
+#define UNWRAP_NEG_DO_CLEAN_ALL(EXP)                                           \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_DO_CLEAN_ALL(ERR_SYS);                                       \
+        }                                                                      \
+    }
 
-#define UNWRAP_NEG_FINAL(EXP) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_FINAL(ERR_SYS); } }
+#define UNWRAP_NEG_FINAL(EXP)                                                  \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_FINAL(ERR_SYS);                                              \
+        }                                                                      \
+    }
 
-#define UNWRAP_NEG_GOTO(EXP, GOTO) { \
-    int res = (EXP); \
-    if (res < 0) { ERROR_GOTO(ERR_SYS, GOTO); } }
+#define UNWRAP_NEG_GOTO(EXP, GOTO)                                             \
+    {                                                                          \
+        int res = (EXP);                                                       \
+        if (res < 0) {                                                         \
+            ERROR_GOTO(ERR_SYS, GOTO);                                         \
+        }                                                                      \
+    }
 
-#define TRY_UNWRAP_NEG(EXP, CLEAN) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { CLEAN; } }
+#define TRY_UNWRAP_NEG(EXP, CLEAN)                                             \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            CLEAN;                                                             \
+        } else {                                                               \
+            ZIC_RES_VAR_NAME = OK;                                             \
+        }                                                                      \
+    }
 
-#define UNWRAP_NSYS_DO_CLEAN_ALL(EXP) UWNRAP_NEG_DO_CLEAN_ALL(EXP) 
+#define UNWRAP_NSYS_DO_CLEAN_ALL(EXP) UWNRAP_NEG_DO_CLEAN_ALL(EXP)
 
-#define UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR) { \
-    const int res = (EXP); \
-    if (res < 0) { ERROR_DO_CLEAN_ALL(ERR) } 
+#define UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR)                                     \
+    {                                                                          \
+        const int res = (EXP);                                                 \
+        if (res < 0) {                                                         \
+            ERROR_DO_CLEAN_ALL(ERR)                                            \
+        }
 
-#define UNWRAP_NERR_FINAL(EXP, ERR) { \
-    const int res = (EXP); \
-    if (res < 0) { ERROR_FINAL(ERR) } 
+#define UNWRAP_NERR_FINAL(EXP, ERR)                                            \
+    {                                                                          \
+        const int res = (EXP);                                                 \
+        if (res < 0) {                                                         \
+            ERROR_FINAL(ERR)                                                   \
+        }
 
-#define UNWRAP_NERR_GOTO(EXP, GOTO, ERR) { \
-    const int res = (EXP); \
-    if (res < 0) { ERROR_GOTO(ERR, GOTO) } 
+#define UNWRAP_NERR_GOTO(EXP, GOTO, ERR)                                       \
+    {                                                                          \
+        const int res = (EXP);                                                 \
+        if (res < 0) {                                                         \
+            ERROR_GOTO(ERR, GOTO)                                              \
+        }
 
 #define UNWRAP_NLOCAL_DO_CLEAN_ALL(EXP) UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
@@ -387,39 +486,72 @@ typedef int result;
 
 #define UNWRAP_NUSER(EXP) UNWRAP_NERR_FINAL(EXP, ERR_USER)
 
-
 // RESULT UNWRAP_NEG
 
+#define RES_UNWRAP_NEG_DO_CLEAN_ALL(EXP)                                       \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_DO_CLEAN_ALL(ERR_SYS);                                       \
+        } else {                                                               \
+            ZIC_RES_VARR_NAME = OK;                                            \
+        }                                                                      \
+        \                                                                      \
+    }
 
-#define RES_UNWRAP_NEG_DO_CLEAN_ALL(EXP) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR_SYS); } }
+#define RES_UNWRAP_NEG_FINAL(EXP)                                              \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_FINAL(ERR_SYS);                                              \
+        } else {                                                               \
+            ZIC_RES_VAR_NAME = OK;                                             \
+        }                                                                      \
+        \                                                                      \
+    }
 
-#define RES_UNWRAP_NEG_FINAL(EXP) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_FINAL(ERR_SYS); } }
+#define RES_UNWRAP_NEG_GOTO(EXP, GOTO)                                         \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_GOTO(ERR_SYS, GOTO);                                         \
+        }                                                                      \
+    }
 
-#define RES_UNWRAP_NEG_GOTO(EXP, GOTO) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR_SYS, GOTO); } }
+#define RES_UNWRAP_NSYS_DO_CLEAN_ALL(EXP) RES_UNWRAP_NEG_DO_CLEAN_ALL(EXP)
 
-#define RES_UNWRAP_NSYS_DO_CLEAN_ALL(EXP) RES_UNWRAP_NEG_DO_CLEAN_ALL(EXP) 
+#define RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR)                                 \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_DO_CLEAN_ALL(ERR)                                            \
+        } else {                                                               \
+            ZIC_RES_VAR_NAME = OK;                                             \
+        }
 
-#define RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_DO_CLEAN_ALL(ERR) } 
+#define RES_UNWRAP_NERR_FINAL(EXP, ERR)                                        \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_FINAL(ERR)                                                   \
+        } else {                                                               \
+            ZIC_RES_VAR_NAME = OK;                                             \
+        }
 
-#define RES_UNWRAP_NERR_FINAL(EXP, ERR) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_FINAL(ERR) } 
+#define RES_UNWRAP_NERR_GOTO(EXP, GOTO, ERR)                                   \
+    {                                                                          \
+        ZIC_RES_VAR_NAME = (EXP);                                              \
+        if (ZIC_RES_VAR_NAME < 0) {                                            \
+            ERROR_GOTO(ERR, GOTO)                                              \
+        } else {                                                               \
+            ZIC_RES_VAR_NAME = OK;                                             \
+        }
 
-#define RES_UNWRAP_NERR_GOTO(EXP, GOTO, ERR) { \
-    ZIC_RES_VAR_NAME = (EXP); \
-    if (ZIC_RES_VAR_NAME < 0) { ERROR_GOTO(ERR, GOTO) } 
+#define RES_UNWRAP_NLOCAL_DO_CLEAN_ALL(EXP)                                    \
+    RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define RES_UNWRAP_NLOCAL_DO_CLEAN_ALL(EXP) RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
-
-#define RES_UNWRAP_NUSER_DO_CLEAN_ALL(EXP) RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_USER)
+#define RES_UNWRAP_NUSER_DO_CLEAN_ALL(EXP)                                     \
+    RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define RES_UNWRAP_NERR(EXP, ERR) RES_UNWRAP_NERR_FINAL(EXP, ERR)
 
@@ -431,39 +563,63 @@ typedef int result;
 
 #define RES_UNWRAP_NUSER(EXP) RES_UNWRAP_NERR_FINAL(EXP, ERR_USER)
 
-
 // UNWRAP_PTR
 
+#define UNWRAP_PTR_DO_CLEAN_ALL(EXP)                                           \
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            ERROR_DO_CLEAN_ALL(ERR_SYS)                                        \
+        }                                                                      \
+    }
 
-#define UNWRAP_PTR_DO_CLEAN_ALL(EXP) {   \
-    const void *res = (EXP);        \
-    if (!res) { ERROR_DO_CLEAN_ALL(ERR_SYS) } }
+#define UNWRAP_PTR_FINAL(EXP)                                                  \
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            ERROR_FINAL(ERR_SYS)                                               \
+        }                                                                      \
+    }
 
-#define UNWRAP_PTR_FINAL(EXP) {     \
-    const void *res = (EXP);        \
-    if (!res) { ERROR_FINAL(ERR_SYS) } }
-
-#define UNWRAP_PTR_GOTO(EXP, GOTO) { \
-    const void *res = (EXP); \
-    if (!res) { ERROR_GOTO(ERR_SYS, GOTO) } }
+#define UNWRAP_PTR_GOTO(EXP, GOTO)                                             \
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            ERROR_GOTO(ERR_SYS, GOTO)                                          \
+        }                                                                      \
+    }
 
 #define UNWRAP_PTR_SYS_DO_CLEAN_ALL(EXP) UNWRAP_PTR_DO_CLEAN_ALL(EXP)
 
-#define UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR) { \
-    const void *res = (EXP); \
-    if (!res) { ERROR_DO_CLEAN_ALL(ERR) } }
+#define UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR)                                  \
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            ERROR_DO_CLEAN_ALL(ERR)                                            \
+        }                                                                      \
+    }
 
-#define UNWRAP_PTR_ERR_FINAL(EXP, ERR) { \
-    const void *res = (EXP); \
-    if (!res) { ERROR_FINAL(ERR) } }
+#define UNWRAP_PTR_ERR_FINAL(EXP, ERR)                                         \
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            ERROR_FINAL(ERR)                                                   \
+        }                                                                      \
+    }
 
-#define UNWRAP_PTR_ERR_GOTO(EXP, GOTO, ERR) { \
-    const void *res = (EXP); \
-    if (!res) { ERROR_GOTO(ERR, GOTO) } }
+#define UNWRAP_PTR_ERR_GOTO(EXP, GOTO, ERR)                                    \
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            ERROR_GOTO(ERR, GOTO)                                              \
+        }                                                                      \
+    }
 
-#define UNWRAP_PTR_LOCAL_DO_CLEAN_ALL(EXP) UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
+#define UNWRAP_PTR_LOCAL_DO_CLEAN_ALL(EXP)                                     \
+    UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)
 
-#define UNWRAP_PTR_USER_DO_CLEAN_ALL(EXP) UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
+#define UNWRAP_PTR_USER_DO_CLEAN_ALL(EXP)                                      \
+    UNWRAP_PTR_ERR_DO_CLEAN_ALL(EXP, ERR_USER)
 
 #define UNWRAP_PTR_ERR(EXP, ERR) UNWRAP_PTR_ERR_FINAL(EXP, ERR)
 
@@ -476,10 +632,12 @@ typedef int result;
 #define UNWRAP_PTR_USER(EXP) UNWRAP_PTR_ERR_FINAL(EXP, ERR_USER)
 
 #define TRY_PTR(EXP, CLEAN)                                                    \
-    { \                                                                         \
-        const void *res = (EXP); \
-		if (!res){ CLEAN; }	 \
-}
+    {                                                                          \
+        const void *res = (EXP);                                               \
+        if (!res) {                                                            \
+            CLEAN;                                                             \
+        }                                                                      \
+    }
 
 #ifdef FULL_API
 
@@ -489,32 +647,36 @@ typedef int result;
 
 #include "defer.h"
 
-
 #undef DEF
 #undef END
 #undef END_CLEAN
 
-#define DEF { \
-    ZIC_RESULT_INIT() \
-    ZIC_PTR_UNWRAP_INIT()
+#define DEF                                                                    \
+    {                                                                          \
+        ZIC_RESULT_INIT()                                                      \
+        ZIC_PTR_UNWRAP_INIT()
 
-#define END goto deferfinal;  \
-    errexit:                  \
-    exit: ;                   \
-    RETURN_ZIC_RESULT()       \
-}
+#define END                                                                    \
+    goto deferfinal;                                                           \
+    errexit:                                                                   \
+    exit:;                                                                     \
+    RETURN_ZIC_RESULT()                                                        \
+    }
 
-#define END_CLEAN deferfinal: \
-    errexit:                  \
-    exit: ;                   \
-    RETURN_ZIC_RESULT()       \
-}
+#define END_CLEAN                                                              \
+    deferfinal:                                                                \
+    errexit:                                                                   \
+    exit:;                                                                     \
+    RETURN_ZIC_RESULT()                                                        \
+    }
 
 #else // FULL_API
 
 #if !defined DEF && !defined END_CLEAN
-#define DEF { ZIC_RESULT_INIT()
-    
+#define DEF                                                                    \
+    {                                                                          \
+        ZIC_RESULT_INIT()
+
 #define END_CLEAN }
 #endif
 
