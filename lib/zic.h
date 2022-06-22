@@ -227,42 +227,51 @@ typedef int result;
 
 // HANDLE
 
-#define HANDLE_PSTDERR(HANDLE_STR)                                             \
-    PRINT_STDERR(HANDLE_STR);                                                  \
-    FAIL()
+#define HANDLE_PRINT(...)                                             \
+    { PRINT_STDERR(__VA_ARGS__);									  \
+    FAIL() }
 
-#define HANDLE_PERR_DO_CLEAN_ALL(...)                                          \
-    PRINT_ERR(__VA_ARGS__)                                                     \
-    FAIL_DO_CLEAN_ALL();
+#define HANDLE_PRINT_DO_CLEAN(CLEAN, ...)									\
+	{ ZIC_RES_VAR_NAME = FAIL;											\
+	PRINT_STDERR(__VA_ARGS__);					\
+    CLEAN; }
 
-#define HANDLE_PERR(...)                                                       \
-    PRINT_ERR(__VA_ARGS__)                                                     \
-    FAIL()
+#define HANDLE_PRINT_DO_CLEAN_ALL(...)                                          \
+    { PRINT_STDERR(__VA_ARGS__)											\
+    FAIL_DO_CLEAN_ALL(); }
+
+#define HANDLE_PRINT_ERR_DO_CLEAN_ALL(...)                                          \
+    { PRINT_ERR(__VA_ARGS__)											\
+    FAIL_DO_CLEAN_ALL(); }
+
+#define HANDLE_PRINT_ERR(...)                                                       \
+    { PRINT_ERR(__VA_ARGS__)											\
+    FAIL() }
 
 #define HANDLE_ERR(ERR)                                                        \
-    PRINT_ERR(ERR_TO_STR(ERR))                                                 \
-    FAIL()
+    { PRINT_ERR(ERR_TO_STR(ERR))										\
+		FAIL() }
 
-#define HANDLE_PERR_DO_CLEAN(CLEAN, ...)                                       \
-    ZIC_RES_VAR_NAME = FAIL;                                                   \
+#define HANDLE_PRINT_ERR_DO_CLEAN(CLEAN, ...)                                       \
+    {ZIC_RES_VAR_NAME = FAIL;											\
     PRINT_ERR(__VA_ARGS__);                                                    \
-    CLEAN;
+    CLEAN; }
 
-#define HANDLE_PERR_GOTO(GOTO, ...)                                            \
-    PRINT_ERR(__VA_ARGS__)                                                     \
-    FAIL_GOTO(GOTO);
+#define HANDLE_PRINT_ERR_GOTO(GOTO, ...)                                            \
+    {PRINT_ERR(__VA_ARGS__)											\
+    FAIL_GOTO(GOTO); }
 
 #define HANDLE_SYS_DO_CLEAN_ALL()                                              \
-    perror(ERROR_PREFIX);                                                      \
-    FAIL_DO_CLEAN_ALL();
+    { perror(ERROR_PREFIX);												\
+	  FAIL_DO_CLEAN_ALL(); }
 
 #define HANDLE_SYS_FINAL()                                                     \
-    perror(ERROR_PREFIX);                                                      \
-    FAIL();
+    { perror(ERROR_PREFIX);												\
+    FAIL(); }
 
 #define HANDLE_SYS_GOTO(GOTO)                                                  \
-    perror(ERROR_PREFIX);                                                      \
-    FAIL_GOTO(GOTO);
+    { perror(ERROR_PREFIX);												\
+	  FAIL_GOTO(GOTO); }
 
 #define HANDLE_SYS() HANDLE_SYS_FINAL()
 
