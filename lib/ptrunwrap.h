@@ -55,7 +55,7 @@
 #define OR(EXP) \
     (ZIC_PTR_UNWRAP_VAR_NAME = (EXP)) ? ZIC_PTR_UNWRAP_VAR_NAME
 
-#define ELSE(EXP) : (EXP) ;
+#define ELSE_PTR(EXP) : (EXP) ;
 
 #ifndef ZIC_DEFER
 

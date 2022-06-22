@@ -3,16 +3,7 @@
 
 #if defined(_MSVC_TRADITIONAL) && _MSVC_TRADITIONAL
 #warning Some macro wrappers may not be available for MSVC. Specify /Zc:preprocessor option to enable full macro-feature set
-#elif defined __GNUC__ && !defined MINI_ZIC
-#undef ZIC_ENABLE_LABEL_OVERLOADING
-#define ZIC_ENABLE_LABEL_OVERLOADING
 #endif
-
-#define GET_LABEL_MACRO(_A1, _A2, MACRO, ...) MACRO
-
-#define GET_3ARG_MACRO(_A1, _A2, _A3, MACRO, ...) MACRO
-
-#define GET_SINGLE_LABEL_MACRO(_A1, MACRO, ...) MACRO
 
 #define ERROR_PREFIX "error"
 
@@ -115,12 +106,13 @@ typedef enum {
 typedef int result;
 
 // ERROR FORMATTING
-#define PRINT_ERR(...) fprintf(stderr, ##__VA_ARGS__);
+#include <stdio.h>
+#define PRINT_TO_STDERR(...) fprintf(stderr, ##__VA_ARGS__);
 
-#define FORMAT_ERR(...)                                                        \
-    PRINT_ERR(ERROR_PREFIX ": ")                                               \
-    PRINT_ERR(__VA_ARGS__)                                                     \
-    PRINT_ERR("\n")
+#define PRINT_ERR(...)                                                         \
+    PRINT_TO_STDERR(ERROR_PREFIX ": ")                                         \
+    PRINT_TO_STDERR(__VA_ARGS__)                                               \
+    PRINT_TO_STDERR("\n")
 
 #define GEN_ERR_MSG(MSG) ZIC_error_msg_##MSG
 
@@ -186,8 +178,6 @@ typedef int result;
         CATCH_ST;                                                              \
     }
 
-#define UNREACHABLE PRINT_ERR("unreachable code")
-
 #define CATCH(CATCH_ERR_NUM, CATCH_ST)                                         \
     if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                                   \
         CATCH_ST;                                                              \
@@ -195,7 +185,7 @@ typedef int result;
 
 #define CATCH_ERR(CATCH_ERR_NUM)                                               \
     if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                                   \
-        FORMAT_ERR(ERR_TO_STR(CATCH_ERR_NUM))                                  \
+        PRINT_ERR(ERR_TO_STR(CATCH_ERR_NUM))                                   \
     }
 
 #define CATCH_SYS()                                                            \
@@ -208,33 +198,58 @@ typedef int result;
         perror(ERROR_PREFIX);                                                  \
     }
 
+#define ELSE_CATCH(CATCH_ERR_NUM, CATCH_ST)                                    \
+    else if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                              \
+        CATCH_ST;                                                              \
+    }
+
+#define ELSE_CATCH_ERR(CATCH_ERR_NUM)                                          \
+    else if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                              \
+        PRINT_ERR(ERR_TO_STR(CATCH_ERR_NUM))                                   \
+    }
+
+#define ELSE_CATCH_SYS()                                                       \
+    else if (ZIC_RES_VAR_NAME == ERR_SYS) {                                    \
+        perror(ERROR_PREFIX);                                                  \
+    }
+
+#define ELSE_CATCH_SYS_ERR(CATCH_ERR_NUM)                                      \
+    else if (ZIC_RES_VAR_NAME == CATCH_ERR_NUM) {                              \
+        perror(ERROR_PREFIX);                                                  \
+    }
+
+#define ELSE(EXP)                                                              \
+    else {                                                                     \
+        EXP;                                                                   \
+    }
+
 #define THROW() UNWRAP_FINAL(ZIC_RES_VAR_NAME)
 
 // HANDLE
 
-#define HANDLE_NO_FORMAT(HANDLE_STR)                                           \
-    fprinf(stderr, HANDLE_STR);                                                \
+#define HANDLE_PSTDERR(HANDLE_STR)                                             \
+    PRINT_STDERR(HANDLE_STR);                                                  \
     FAIL()
 
-#define HANDLE_DO_CLEAN_ALL(...)                                               \
-    FORMAT_ERR(__VA_ARGS__)                                                    \
+#define HANDLE_PERR_DO_CLEAN_ALL(...)                                          \
+    PRINT_ERR(__VA_ARGS__)                                                     \
     FAIL_DO_CLEAN_ALL();
 
-#define HANDLE(...)                                                            \
-    FORMAT_ERR(__VA_ARGS__)                                                    \
+#define HANDLE_PERR(...)                                                       \
+    PRINT_ERR(__VA_ARGS__)                                                     \
     FAIL()
 
 #define HANDLE_ERR(ERR)                                                        \
-    FORMAT_ERR(ERR_TO_STR(ERR))                                                \
+    PRINT_ERR(ERR_TO_STR(ERR))                                                 \
     FAIL()
 
-#define HANDLE_DO_CLEAN(CLEAN, ...)                                            \
+#define HANDLE_PERR_DO_CLEAN(CLEAN, ...)                                       \
     ZIC_RES_VAR_NAME = FAIL;                                                   \
-    FORMAT_ERR(__VA_ARGS__);                                                   \
+    PRINT_ERR(__VA_ARGS__);                                                    \
     CLEAN;
 
-#define HANDLE_GOTO(GOTO, ...)                                                 \
-    FORMAT_ERR(__VA_ARGS__)                                                    \
+#define HANDLE_PERR_GOTO(GOTO, ...)                                            \
+    PRINT_ERR(__VA_ARGS__)                                                     \
     FAIL_GOTO(GOTO);
 
 #define HANDLE_SYS_DO_CLEAN_ALL()                                              \
