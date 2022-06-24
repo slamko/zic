@@ -9,6 +9,10 @@
 
 #define ZIC_RES_VAR_NAME ZIC_res
 
+/**
+ * Supposed to be the result of the function.
+ * (Initialize with ZIC_RESULT_INIT())
+ */
 #define ZIC_RESULT ZIC_RES_VAR_NAME
 
 #define ZIC_CLEANUP_LABEL_NAME ZIC_cleanup
@@ -17,14 +21,28 @@
 #define FULL_API
 #endif
 
+/**
+ * Set successfull status for ZIC_RESULT variable and do cleanup.   
+ */
 #define RET_OK_DO_CLEAN_ALL()                                                  \
     {                                                                          \
         ZIC_RES_VAR_NAME = OK;                                                 \
         goto ZIC_CLEANUP_LABEL_NAME;                                           \
     }
 
+/**
+ * Exit function with successfull result.
+ */
 #define RET_OK() return OK;
 
+/**
+ * Set successfull status for ZIC_RESULT variable
+ * and execute custom cleanup statement
+ * (supposed to be DO_CLEAN() or DO_CLEAN_ALL())
+ *
+ * Example:
+ * RET_OK_DO_CLEAN(DO_CLEAN_ALL())
+ */
 #define RET_OK_DO_CLEAN(CLEAN)                                                 \
     {                                                                          \
         ZIC_RES_VAR_NAME = OK;                                                 \
@@ -37,12 +55,18 @@
         goto LABEL;                                                            \
     }
 
+/**
+ * Set error status for ZIC_RESULT variable and do cleanup.   
+ */
 #define ERROR_DO_CLEAN_ALL(ERR)                                                \
     {                                                                          \
         ZIC_RES_VAR_NAME = ERR;                                                \
         goto ZIC_CLEANUP_LABEL_NAME;                                           \
     }
 
+/**
+ * Aliased to ERROR().
+ */
 #define ERROR_FINAL(ERR) return ERR;
 
 #define ERROR_GOTO(ERR, GOTO)                                                  \
@@ -51,12 +75,24 @@
         goto GOTO;                                                             \
     }
 
+/**
+ * Set error status for ZIC_RESULT variable
+ * and execute custom cleanup statement
+ * (supposed to be DO_CLEAN() or DO_CLEAN_ALL())
+ *
+ * Example:
+ * ERROR_DO_CLEAN(DO_CLEAN_ALL())
+ */
 #define ERROR_DO_CLEAN(ERR, CLEAN)                                             \
     {                                                                          \
         ZIC_RES_VAR_NAME = ERR;                                                \
         CLEAN;                                                                 \
     }
 
+/**
+ * Exit function with return value of ERR.
+ * (May be any integer value but generally should be used to return an error)
+ */
 #define ERROR(ERR) ERROR_FINAL(ERR)
 
 #define FAIL_DO_CLEAN_ALL()                                                    \
@@ -65,6 +101,9 @@
         goto ZIC_CLEANUP_LABEL_NAME;                                           \
     }
 
+/**
+ * Exit function with the result of FAIL.
+ */
 #define FAIL() return FAIL;
 
 #define FAIL_GOTO(GOTO)                                                        \
@@ -73,26 +112,74 @@
         goto GOTO;                                                             \
     }
 
+/**
+ * Set status of FAIL for ZIC_RESULT variable
+ * and execute custom cleanup statement
+ * (supposed to be DO_CLEAN() or DO_CLEAN_ALL())
+ *
+ * Example:
+ * FAIL_DO_CLEAN(DO_CLEAN_ALL())
+ */
 #define FAIL_DO_CLEAN(CLEAN)                                                   \
     {                                                                          \
         ZIC_RES_VAR_NAME = FAIL;                                               \
         CLEAN;                                                                 \
     }
 
+/**
+ * Exit function with the return value of ZIC_RESULT
+ * (Should previously be initialized with ZIC_RESULT_INIT())
+ */
 #define ZIC_RETURN_RESULT() return ZIC_RES_VAR_NAME;
 
-#define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME = 0;
+/**
+ * Initialize ZIC_RESULT with successfull status.
+ * This variable supposed to be used as an accumulative result
+ * of the function flow (it is used internally by TRY() and RES_UNWRAP_*() family of macros)
+ * and should be the return value of the function.
+ * (Use ZIC_RETURN_RESULT() to return )
+ */
+#define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME = OK;
 
+/**
+ * Create a label with an arbitary statement
+ * (Supposed to be some cleanup function e.g. free() or fclose())
+ *
+ * Example:
+ * CLEANUP(cl_buffer, free(buffer));
+ */
 #define CLEANUP(LABEL, CLEAN)                                                  \
     LABEL:                                                                     \
     CLEAN;
 
+/**
+ * Create the main cleanup label with an arbitary statement
+ * (This cleanup label will be used by DO_CLEAN_ALL())
+ * (CLEANUP_ALL() supposed to precede CLEANUP() in function body)
+ *
+ * Example:
+ * if (*some error*) {
+ *     DO_CLEAN_ALL() - will goto to the label defined with CLEANUP_ALL()
+ * }
+ *
+ * ... *function body*
+ *
+ * CLEANUP_ALL(fclose(file));
+ * CLEANUP(cl_buffer, free(buffer));
+ */
 #define CLEANUP_ALL(CLEAN)                                                     \
     ZIC_CLEANUP_LABEL_NAME:                                                    \
     CLEAN;
 
+
+/**
+ * Check ZIC_RESULT value and goto provided label.
+ */
 #define DO_CLEAN(LABEL) UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)
 
+/**
+ * Check ZIC_RESULT value and goto main cleanup label defined with CLEANUP_ALL().
+ */
 #define DO_CLEAN_ALL() UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)
 
 typedef enum {
