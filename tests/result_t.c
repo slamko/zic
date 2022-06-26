@@ -2,7 +2,6 @@
 #include <criterion/new/assert.h>
 #include <criterion/new/assert.h>
 #include <criterion/assert.h>
-#include "defer.h"
 #include "zic.h"
 
 result return_ok() {
