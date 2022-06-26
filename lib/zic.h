@@ -261,9 +261,9 @@ typedef int result;
 
 #define IS_ERROR(EXP) (EXP != OK)
 
-#define ISNULL(PTR) (!PTR)
+#define IS_NULL(PTR) (!PTR)
 
-#define IS_NOTNULL(PTR) (PTR)
+#define IS_NOTNULL(PTR) (!!PTR)
 
 #define IS_ERR(ERR) == ERR
 

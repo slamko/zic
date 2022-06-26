@@ -1,0 +1,16 @@
+[
+  {
+    "arguments": [
+      "/bin/gcc",
+      "-c",
+      "-DMINI_ZIC",
+      "-I../lib",
+      "-o",
+      "build/result_t.o",
+      "result_t.c"
+    ],
+    "directory": "/home/slamko/Documents/cc/zic/tests",
+    "file": "/home/slamko/Documents/cc/zic/tests/result_t.c",
+    "output": "/home/slamko/Documents/cc/zic/tests/build/result_t.o"
+  }
+]
