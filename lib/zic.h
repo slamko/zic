@@ -1,6 +1,6 @@
 /*
 Copyright Viaceslav Chepelyk-Kozhin.
-  
+
 This file is part of Zic project.
 
 Zic is free software: you can redistribute it and/or modify it under the
@@ -36,7 +36,7 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
 #define ZIC_CLEANUP_LABEL_NAME ZIC_cleanup
 
 /**
- * Set successfull status for ZIC_RESULT variable and do cleanup.   
+ * Set successfull status for ZIC_RESULT variable and do cleanup.
  */
 #define RET_OK_DO_CLEAN_ALL()                                                  \
     {                                                                          \
@@ -70,7 +70,7 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
     }
 
 /**
- * Set error status for ZIC_RESULT variable and do cleanup.   
+ * Set error status for ZIC_RESULT variable and do cleanup.
  */
 #define ERROR_DO_CLEAN_ALL(ERR)                                                \
     {                                                                          \
@@ -149,9 +149,9 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
 /**
  * Initialize ZIC_RESULT with successfull status.
  * This variable supposed to be used as an accumulative result
- * of the function flow (it is used internally by TRY() and RES_UNWRAP_*() family of macros)
- * and should be the return value of the function.
- * (Use ZIC_RETURN_RESULT() to return )
+ * of the function flow (it is used internally by TRY() and RES_UNWRAP_*()
+ * family of macros) and should be the return value of the function. (Use
+ * ZIC_RETURN_RESULT() to return )
  */
 #define ZIC_RESULT_INIT() result ZIC_RES_VAR_NAME = OK;
 
@@ -185,16 +185,26 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
     ZIC_CLEANUP_LABEL_NAME:                                                    \
     CLEAN;
 
-
 /**
  * Check ZIC_RESULT value and goto provided label.
  */
-#define DO_CLEAN(LABEL) UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)
+#define DO_CLEAN(LABEL)                                                        \
+    if (RES_IS_ERROR()) {                                                      \
+        UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)                                   \
+    } else {                                                                   \
+        goto LABEL;                                                            \
+    }
 
 /**
- * Check ZIC_RESULT value and goto main cleanup label defined with CLEANUP_ALL().
+ * Check ZIC_RESULT value and goto main cleanup label defined with
+ * CLEANUP_ALL().
  */
-#define DO_CLEAN_ALL() UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)
+#define DO_CLEAN_ALL()                                                         \
+    if (RES_IS_ERROR()) {                                                      \
+        UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)                                   \
+    } else {                                                                   \
+        goto ZIC_CLEANUP_LABEL_NAME;                                                            \
+    }
 
 typedef enum {
     OK = 0,
@@ -225,13 +235,12 @@ typedef int result;
 
 #if __STDC_VERSION__ >= 201112L
 
-#define DEFINE_ERROR(ERR_NAME, NUM)                                            \
-    enum { ERR_NAME = NUM };                                                   
+#define DEFINE_ERROR(ERR_NAME, NUM) enum { ERR_NAME = NUM };
 //    const int ERR_NUM_NAME(NUM) = NUM;
 
 #define DEFINE_ERROR_MSG(ERR_NAME, NUM, ERR_MSG)                               \
     enum { ERR_NAME = NUM };                                                   \
-    const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG; 
+    const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG;
 //	const int ERR_NUM_NAME(NUM) = NUM;
 #else
 
@@ -600,7 +609,7 @@ typedef int result;
         }                                                                      \
     }
 
-#define TRY_NEG(EXP, CLEAN)                                             \
+#define TRY_NEG(EXP, CLEAN)                                                    \
     {                                                                          \
         ZIC_RES_VAR_NAME = (EXP);                                              \
         if (ZIC_RES_VAR_NAME < 0) {                                            \
@@ -838,7 +847,9 @@ typedef int result;
     {                                                                          \
         ZIC_RESULT_INIT()
 
-#define END ZIC_RETURN_RESULT() }
+#define END                                                                    \
+    ZIC_RETURN_RESULT()                                                        \
+    }
 #endif // DEF && END_CLEAN
 
 #endif // ZIC_FULL_API

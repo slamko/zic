@@ -20,8 +20,9 @@ result file_io(int argc, char **argv) {
     UNWRAP_PTR(fp = fopen(argv[1], "r"));
 
     ch = fgetc(fp);
-    TRY(fputc(ch, stdout), DO_CLEAN(cl_fp));
-
+    TRY_NEG(fputc(ch, stdout), DO_CLEAN(cl_fp));
+	fputc('\n', stdout);
+	
     CLEANUP(cl_fp, fclose(fp))
     ZIC_RETURN_RESULT()
 }
@@ -36,8 +37,8 @@ result string_op(int argc, char **argv) {
 
     puts("Guess my number (0-9)");
 
-    UNWRAP_PTR(buf = calloc(sizeof(*buf), 1024));
-    TRY_PTR(fgets(buf, 1024, stdin), DO_CLEAN_ALL());
+    UNWRAP_PTR(buf = calloc(sizeof(*buf), 2));
+    TRY_PTR(fgets(buf, 2, stdin), DO_CLEAN_ALL());
 	
     if (strcmp(buf, "7")) {
 		PRINT_TO_STDERR("Incorrect\n");
