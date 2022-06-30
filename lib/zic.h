@@ -1,4 +1,7 @@
-/* This file is part of Zic project.
+/*
+Copyright Viaceslav Chepelyk-Kozhin.
+  
+This file is part of Zic project.
 
 Zic is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software
@@ -31,10 +34,6 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
 #define ZIC_RESULT ZIC_RES_VAR_NAME
 
 #define ZIC_CLEANUP_LABEL_NAME ZIC_cleanup
-
-#ifndef MINI_ZIC
-#define FULL_API
-#endif
 
 /**
  * Set successfull status for ZIC_RESULT variable and do cleanup.   
@@ -218,15 +217,22 @@ typedef int result;
 
 #define GEN_ERR_MSG(MSG) ZIC_error_msg_##MSG
 
+#define GEN_ERR_NUM_NAME(NUM) ZIC_error_num_##_##NUM
+
 #define ERR_MSG_NAME(MSG) GEN_ERR_MSG(MSG)
+
+#define ERR_NUM_NAME(NUM) GEN_ERR_NUM_NAME(NUM)
 
 #if __STDC_VERSION__ >= 201112L
 
-#define DEFINE_ERROR(ERR_NAME, NUM) enum { ERR_NAME = NUM };
+#define DEFINE_ERROR(ERR_NAME, NUM)                                            \
+    enum { ERR_NAME = NUM };                                                   
+//    const int ERR_NUM_NAME(NUM) = NUM;
+
 #define DEFINE_ERROR_MSG(ERR_NAME, NUM, ERR_MSG)                               \
     enum { ERR_NAME = NUM };                                                   \
-    const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG;
-
+    const char *const ERR_MSG_NAME(ERR_NAME) = ERR_MSG; 
+//	const int ERR_NUM_NAME(NUM) = NUM;
 #else
 
 #if defined _MSC_VER
@@ -272,6 +278,7 @@ typedef int result;
 #define RES_IS_ERROR() (ZIC_RES_VAR_NAME != OK)
 
 #define RES_IS_ERR(ERR) (ZIC_RES_VAR_NAME == ERR)
+
 // TRY CATCH
 
 #define TRY(EXP, CATCH_ST)                                                     \
@@ -430,10 +437,6 @@ typedef int result;
             ERROR_FINAL(res);                                                  \
         }                                                                      \
     }
-
-#define TRY_UNWRAP(EXP)                                                        \
-    ZIC_RES_VAR_NAME = (EXP);                                                  \
-    if (ZIC_RES_UNWRAP)
 
 #define UNWRAP_GOTO(EXP, GOTO)                                                 \
     {                                                                          \
@@ -597,7 +600,7 @@ typedef int result;
         }                                                                      \
     }
 
-#define TRY_UNWRAP_NEG(EXP, CLEAN)                                             \
+#define TRY_NEG(EXP, CLEAN)                                             \
     {                                                                          \
         ZIC_RES_VAR_NAME = (EXP);                                              \
         if (ZIC_RES_VAR_NAME < 0) {                                            \
@@ -797,7 +800,7 @@ typedef int result;
         }                                                                      \
     }
 
-#ifdef FULL_API
+#ifdef ZIC_FULL_API
 
 #include "matchwith.h"
 
@@ -828,16 +831,16 @@ typedef int result;
     RETURN_ZIC_RESULT()                                                        \
     }
 
-#else // FULL_API
+#else // ZIC_FULL_API
 
-#if !defined DEF && !defined END_CLEAN
+#if !defined DEF && !defined END
 #define DEF                                                                    \
     {                                                                          \
         ZIC_RESULT_INIT()
 
-#define END_CLEAN }
-#endif
+#define END ZIC_RETURN_RESULT() }
+#endif // DEF && END_CLEAN
 
-#endif // FULL_API
+#endif // ZIC_FULL_API
 
 #endif // ZIC_ZIC
