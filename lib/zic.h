@@ -188,23 +188,23 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
 /**
  * Check ZIC_RESULT value and goto provided label.
  */
-#define DO_CLEAN(LABEL)                                                        \
+#define DO_CLEAN(LABEL) {                                                      \
     if (RES_IS_ERROR()) {                                                      \
         UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)                                   \
     } else {                                                                   \
         goto LABEL;                                                            \
-    }
+    } }
 
 /**
  * Check ZIC_RESULT value and goto main cleanup label defined with
  * CLEANUP_ALL().
  */
-#define DO_CLEAN_ALL()                                                         \
+#define DO_CLEAN_ALL()  {                                                      \
     if (RES_IS_ERROR()) {                                                      \
         UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)                                   \
     } else {                                                                   \
         goto ZIC_CLEANUP_LABEL_NAME;                                                            \
-    }
+    } }
 
 typedef enum {
     OK = 0,
