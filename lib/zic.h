@@ -188,23 +188,27 @@ Zic. If not, see <https://www.gnu.org/licenses/>.
 /**
  * Check ZIC_RESULT value and goto provided label.
  */
-#define DO_CLEAN(LABEL) {                                                      \
-    if (RES_IS_ERROR()) {                                                      \
-        UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)                                   \
-    } else {                                                                   \
-        goto LABEL;                                                            \
-    } }
+#define DO_CLEAN(LABEL)                                                        \
+    {                                                                          \
+        if (RES_IS_ERROR()) {                                                  \
+            UNWRAP_GOTO(ZIC_RES_VAR_NAME, LABEL)                               \
+        } else {                                                               \
+            goto LABEL;                                                        \
+        }                                                                      \
+    }
 
 /**
  * Check ZIC_RESULT value and goto main cleanup label defined with
  * CLEANUP_ALL().
  */
-#define DO_CLEAN_ALL()  {                                                      \
-    if (RES_IS_ERROR()) {                                                      \
-        UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)                                   \
-    } else {                                                                   \
-        goto ZIC_CLEANUP_LABEL_NAME;                                                            \
-    } }
+#define DO_CLEAN_ALL()                                                         \
+    {                                                                          \
+        if (RES_IS_ERROR()) {                                                  \
+            UNWRAP_GOTO(ZIC_RES_VAR_NAME, ZIC_CLEANUP_LABEL_NAME)              \
+        } else {                                                               \
+            goto ZIC_CLEANUP_LABEL_NAME;                                       \
+        }                                                                      \
+    }
 
 typedef enum {
     OK = 0,
@@ -291,9 +295,11 @@ typedef int result;
 // TRY CATCH
 
 #define TRY(EXP, CATCH_ST)                                                     \
-    (ZIC_RES_VAR_NAME = (EXP));                                                \
-    if (IS_ERROR(ZIC_RES_VAR_NAME)) {                                          \
-        CATCH_ST;                                                              \
+    {                                                                          \
+        (ZIC_RES_VAR_NAME = (EXP));                                            \
+        if (IS_ERROR(ZIC_RES_VAR_NAME)) {                                      \
+            CATCH_ST;                                                          \
+        }                                                                      \
     }
 
 #define CATCH(CATCH_ERR_NUM, CATCH_ST)                                         \
@@ -666,7 +672,6 @@ typedef int result;
         } else {                                                               \
             ZIC_RES_VARR_NAME = OK;                                            \
         }                                                                      \
-        \                                                                      \
     }
 
 #define RES_UNWRAP_NEG_FINAL(EXP)                                              \
@@ -677,7 +682,6 @@ typedef int result;
         } else {                                                               \
             ZIC_RES_VAR_NAME = OK;                                             \
         }                                                                      \
-        \                                                                      \
     }
 
 #define RES_UNWRAP_NEG_GOTO(EXP, GOTO)                                         \
@@ -697,7 +701,8 @@ typedef int result;
             ERROR_DO_CLEAN_ALL(ERR)                                            \
         } else {                                                               \
             ZIC_RES_VAR_NAME = OK;                                             \
-        }
+        }                                                                      \
+    }
 
 #define RES_UNWRAP_NERR_FINAL(EXP, ERR)                                        \
     {                                                                          \
@@ -706,7 +711,8 @@ typedef int result;
             ERROR_FINAL(ERR)                                                   \
         } else {                                                               \
             ZIC_RES_VAR_NAME = OK;                                             \
-        }
+        }                                                                      \
+    }
 
 #define RES_UNWRAP_NERR_GOTO(EXP, GOTO, ERR)                                   \
     {                                                                          \
@@ -715,7 +721,8 @@ typedef int result;
             ERROR_GOTO(ERR, GOTO)                                              \
         } else {                                                               \
             ZIC_RES_VAR_NAME = OK;                                             \
-        }
+        }                                                                      \
+    }
 
 #define RES_UNWRAP_NLOCAL_DO_CLEAN_ALL(EXP)                                    \
     RES_UNWRAP_NERR_DO_CLEAN_ALL(EXP, ERR_LOCAL)

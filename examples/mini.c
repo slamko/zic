@@ -51,14 +51,10 @@ result string_op(int argc, char **argv) {
     ZIC_RETURN_RESULT();
 }
 
-int main(int argc, char **argv) {
-    ZIC_RESULT_INIT();
-
+int main(int argc, char **argv) DEF
     TRY(file_io(argc, argv), CATCH(ERR_INVARG, PRINT_ERR("Invalid argument!"));
         CATCH_SYS());
 
     TRY(string_op(argc, argv),
         CATCH(ERR_INVARG, PRINT_ERR("Invalid argument!"); CATCH_SYS()));
-
-    ZIC_RETURN_RESULT();
-}
+END

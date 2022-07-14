@@ -1,0 +1,15 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I../lib",
+      "-o",
+      "zic_example_std",
+      "mini.c"
+    ],
+    "directory": "/home/slamko/proj/cc/spmn/zic/examples",
+    "file": "/home/slamko/proj/cc/spmn/zic/examples/mini.c",
+    "output": "/home/slamko/proj/cc/spmn/zic/examples/zic_example_std"
+  }
+]
